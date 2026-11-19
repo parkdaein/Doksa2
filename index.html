@@ -352,14 +352,17 @@ class RealtimeLeaderboard {
         this.renderAll();
 
         try {
-            apiKey: "AIzaSyBafi2yRMz6wHuHOujg-69FEVQo4zCiUk8",
-  authDomain: "doksa2-57077.firebaseapp.com",
-  projectId: "doksa2-57077",
-  storageBucket: "doksa2-57077.firebasestorage.app",
-  messagingSenderId: "305953037960",
-  appId: "1:305953037960:web:5ec06e7c4411a311ad893d"
+            if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+                throw new Error('Firebase config not available');
+            }
+            const firebaseConfig = 
+apiKey: "AIzaSyBafi2yRMz6wHuHOujg-69FEVQo4zCiUk8",
+authDomain: "doksa2-57077.firebaseapp.com",
+projectId: "doksa2-57077",
+storageBucket: "doksa2-57077.firebasestorage.app",
+messagingSenderId: "305953037960",
+appId: "1:305953037960:web:5ec06e7c4411a311ad893d"
 };
-
             const app = initializeApp(firebaseConfig);
             this.auth = getAuth(app);
             this.db = getFirestore(app);
