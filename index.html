@@ -1,0 +1,2197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>낼름! 독사의 유혹 - 60초 타임어택</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Jua', 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #FFDEE9 0%, #B5FFFC 100%);
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-shell {
+            position: relative;
+            width: 100%;
+            max-width: 460px;
+            height: 100%;
+            max-height: 860px;
+            background: #FFFDF9;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.16);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        @media (min-width: 480px) {
+            #game-shell {
+                height: 94dvh;
+                border-radius: 32px;
+                border: 6px solid #FFFFFF;
+            }
+        }
+
+        .touch-btn {
+            transition: transform 0.06s ease, box-shadow 0.06s ease;
+        }
+
+        .touch-btn:active, .touch-btn.is-pressed {
+            transform: translateY(4px) scale(0.98);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #FDCB6E;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-shell">
+    <!-- 상단 HUD -->
+    <header class="bg-white px-4 pt-3 pb-2.5 border-b-4 border-dashed border-amber-200 z-10 shrink-0">
+        <div class="flex items-center justify-between gap-2 mb-2">
+            <!-- 점수 박스 -->
+            <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl px-3 py-1 min-w-[92px] text-center">
+                <div class="text-[11px] text-rose-400 tracking-wider">SCORE</div>
+                <div id="hud-score" class="text-2xl text-rose-600 leading-tight">0</div>
+            </div>
+
+            <!-- 중앙 상태 뱃지 & 음소거 버튼 -->
+            <div class="flex flex-col items-center gap-1">
+                <div class="flex items-center gap-1.5">
+                    <span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full border border-amber-300">
+                        ⏱️ 60초 타임어택
+                    </span>
+                    <button id="btn-mute" type="button" aria-label="음소거 토글"
+                        class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-sm shadow-sm">
+                        🔊
+                    </button>
+                </div>
+                <div id="hud-status-pill" class="text-xs text-slate-500">좌·우 타이밍에 맞춰 낼름!</div>
+            </div>
+
+            <!-- 콤보 박스 -->
+            <div id="hud-combo-box" class="bg-amber-50 border-2 border-amber-300 rounded-2xl px-3 py-1 min-w-[92px] text-center transition-transform duration-100">
+                <div class="text-[11px] text-amber-500 tracking-wider">COMBO</div>
+                <div id="hud-combo" class="text-2xl text-amber-600 leading-tight">0</div>
+            </div>
+        </div>
+
+        <!-- 게이지 바 2종 -->
+        <div class="space-y-1.5">
+            <!-- 타이머 바 -->
+            <div class="relative h-4 bg-slate-200 rounded-full overflow-hidden border border-white shadow-inner">
+                <div id="bar-timer" class="h-full w-full bg-gradient-to-r from-rose-500 via-amber-400 to-emerald-400 rounded-full transition-all duration-75"></div>
+                <span id="txt-timer" class="absolute inset-0 flex items-center justify-center text-[11px] text-slate-800 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)]">
+                    남은 시간 60.0초
+                </span>
+            </div>
+            <!-- 피버 바 -->
+            <div class="relative h-4 bg-slate-200 rounded-full overflow-hidden border border-white shadow-inner">
+                <div id="bar-fever" class="h-full w-0 bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 rounded-full transition-all duration-150"></div>
+                <span id="txt-fever" class="absolute inset-0 flex items-center justify-center text-[11px] text-slate-800 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)]">
+                    🔥 독사의 본능 (0 / 15 COMBO)
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 중앙 게임 캔버스 무대 -->
+    <main id="canvas-stage" class="relative flex-1 w-full bg-[#FFF9F2] overflow-hidden">
+        <canvas id="gameCanvas" class="block w-full h-full"></canvas>
+    </main>
+
+    <!-- 하단 좌/우 터치 컨트롤 -->
+    <footer class="h-[112px] bg-white border-t-2 border-slate-100 px-4 py-3 flex items-center justify-between gap-3 z-10 shrink-0">
+        <button id="btn-left" type="button"
+            class="touch-btn flex-1 h-full rounded-3xl bg-gradient-to-b from-pink-400 to-rose-500 border-4 border-pink-200 text-white shadow-[0_6px_0_#be123c] flex flex-col items-center justify-center cursor-pointer">
+            <span class="text-2xl tracking-wide">◀ LEFT</span>
+            <span class="text-xs opacity-90 mt-0.5">왼쪽 낼름! (← / A)</span>
+        </button>
+        <button id="btn-right" type="button"
+            class="touch-btn flex-1 h-full rounded-3xl bg-gradient-to-b from-sky-400 to-blue-600 border-4 border-sky-200 text-white shadow-[0_6px_0_#1d4ed8] flex flex-col items-center justify-center cursor-pointer">
+            <span class="text-2xl tracking-wide">RIGHT ▶</span>
+            <span class="text-xs opacity-90 mt-0.5">오른쪽 낼름! (→ / D)</span>
+        </button>
+    </footer>
+
+    <!-- 시작 화면 & 캐릭터 도감 오버레이 -->
+    <section id="overlay-start" class="absolute inset-0 bg-[#FFFDF9]/95 backdrop-blur-sm z-30 flex flex-col justify-between p-5 overflow-y-auto custom-scroll">
+        <div class="text-center">
+            <span class="inline-block bg-amber-100 text-amber-800 border-2 border-amber-300 rounded-full px-3.5 py-0.5 text-sm mb-1.5">
+                🐍 캐주얼 일러스트 리듬 액션
+            </span>
+            <h1 class="text-4xl text-rose-500 drop-shadow-[2px_3px_0_#FDE68A] mb-1">
+                낼름! 독사의 유혹
+            </h1>
+            <p class="text-xs text-slate-500 mb-3">
+                하단 타격 존에 맞춰 좌·우 버튼을 눌러 유부녀 개체만 낚아채세요!
+            </p>
+
+            <!-- 닉네임 입력 & 명예의 전당 버튼 바 -->
+            <div class="bg-amber-50/90 rounded-2xl p-2.5 border-2 border-amber-200 mb-2.5 flex items-center gap-2">
+                <div class="flex-1 flex items-center bg-white rounded-xl border border-amber-300 px-2.5 py-1.5">
+                    <span class="text-sm mr-1.5">🏷️</span>
+                    <input id="input-nickname-start" type="text" maxlength="10" placeholder="닉네임 (최대 10자)"
+                        class="w-full text-sm text-slate-800 bg-transparent outline-none placeholder:text-slate-400" />
+                </div>
+                <button id="btn-open-ranking" type="button"
+                    class="shrink-0 bg-gradient-to-b from-amber-400 to-orange-500 text-white text-xs px-3 py-2 rounded-xl border-2 border-amber-200 shadow-sm active:translate-y-0.5 cursor-pointer flex items-center gap-1">
+                    <span>🏆</span>
+                    <span>TOP 10</span>
+                </button>
+            </div>
+
+            <!-- 유부녀 개체 도감 -->
+            <div class="bg-white rounded-2xl p-3 border-2 border-rose-100 shadow-sm mb-2.5 text-left">
+                <div class="text-sm text-rose-500 mb-2 flex items-center justify-between">
+                    <span>💖 낚아챌 타겟 (유부녀 5종)</span>
+                    <span class="text-[11px] bg-rose-50 px-2 py-0.5 rounded-full">15콤보 시 피버!</span>
+                </div>
+                <div id="codex-good" class="grid grid-cols-2 gap-1.5"></div>
+            </div>
+
+            <!-- 악성 개체 도감 -->
+            <div class="bg-white rounded-2xl p-3 border-2 border-slate-200 shadow-sm text-left">
+                <div class="text-sm text-slate-700 mb-2 flex items-center justify-between">
+                    <span>⚠️ 피해야 할 함정 (악성 5종)</span>
+                    <span class="text-[11px] bg-slate-100 px-2 py-0.5 rounded-full">터치 시 감점/페널티</span>
+                </div>
+                <div id="codex-bad" class="grid grid-cols-2 gap-1.5"></div>
+            </div>
+        </div>
+
+        <button id="btn-start" type="button"
+            class="w-full py-4 mt-3 rounded-3xl bg-gradient-to-b from-emerald-400 to-emerald-600 border-4 border-emerald-200 text-white text-2xl shadow-[0_6px_0_#047857] active:translate-y-1 transition-transform cursor-pointer">
+            게임 시작! (60초)
+        </button>
+    </section>
+
+    <!-- 결과 화면 오버레이 (실시간 랭킹 등록 & TOP 10 리더보드 포함) -->
+    <section id="overlay-result" class="hidden absolute inset-0 bg-[#FFFDF9]/95 backdrop-blur-sm z-30 flex flex-col justify-between p-4 overflow-y-auto custom-scroll text-center">
+        <div class="bg-white rounded-3xl p-4 border-4 border-amber-200 shadow-lg mb-2.5">
+            <div class="flex items-center justify-between mb-1">
+                <span class="inline-block bg-rose-100 text-rose-600 px-3 py-0.5 rounded-full text-xs">
+                    ⏱️ TIME UP!
+                </span>
+                <span id="res-rank-badge" class="inline-block bg-amber-100 text-amber-700 px-3 py-0.5 rounded-full text-xs">
+                    RANK S
+                </span>
+            </div>
+
+            <div class="flex items-center justify-center gap-3 my-1.5">
+                <div id="res-rank" class="w-16 h-16 shrink-0 rounded-full bg-gradient-to-br from-amber-300 to-orange-500 border-4 border-white shadow-md flex items-center justify-center text-3xl text-white">
+                    S
+                </div>
+                <div class="text-left">
+                    <div class="text-xs text-slate-400">최종 사냥 점수</div>
+                    <div id="res-score" class="text-3xl text-rose-600 leading-none my-0.5">0</div>
+                    <div class="text-[11px] text-slate-500">
+                        최대 <span id="res-combo" class="text-amber-600 font-bold">0</span>콤보 · P <span id="res-hits" class="text-emerald-600 font-bold">0/0</span> · 함정 <span id="res-bad" class="text-slate-700 font-bold">0회</span>
+                    </div>
+                </div>
+            </div>
+            <p id="res-comment" class="text-xs text-rose-500 mb-3">
+                전설의 혀놀림! 완벽한 사냥꾼입니다!
+            </p>
+
+            <!-- 실시간 랭킹 등록 폼 -->
+            <div class="bg-rose-50/80 rounded-2xl p-2.5 border border-rose-200">
+                <div class="text-[11px] text-rose-600 text-left mb-1.5 flex items-center justify-between">
+                    <span>✍️ 실시간 명예의 전당 기록 등록</span>
+                    <span id="submit-status-text" class="text-slate-400">미등록</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <input id="input-nickname-result" type="text" maxlength="10" placeholder="닉네임 입력 (최대 10자)"
+                        class="flex-1 min-w-0 bg-white border border-rose-300 rounded-xl px-3 py-2 text-sm text-slate-800 outline-none focus:border-rose-500" />
+                    <button id="btn-submit-score" type="button"
+                        class="shrink-0 bg-gradient-to-b from-rose-500 to-pink-600 text-white text-sm px-3.5 py-2 rounded-xl border-2 border-rose-200 shadow-sm active:translate-y-0.5 disabled:opacity-50 cursor-pointer">
+                        랭킹 등록
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 결과 화면 내 실시간 TOP 10 리더보드 -->
+        <div class="bg-white rounded-3xl p-3.5 border-2 border-amber-200 shadow-sm flex-1 min-h-[190px] flex flex-col mb-2.5 text-left">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-amber-700 flex items-center gap-1">
+                    🏆 실시간 TOP 10 랭킹
+                </span>
+                <span id="rt-badge-result" class="text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    ● LIVE 동기화 중
+                </span>
+            </div>
+            <div id="leaderboard-result-list" class="flex-1 overflow-y-auto custom-scroll space-y-1.5 pr-0.5">
+                <div class="text-center text-xs text-slate-400 py-6">순위를 불러오는 중입니다...</div>
+            </div>
+        </div>
+
+        <button id="btn-restart" type="button"
+            class="w-full py-3.5 shrink-0 rounded-3xl bg-gradient-to-b from-amber-400 to-orange-500 border-4 border-amber-200 text-white text-xl shadow-[0_5px_0_#c2410c] active:translate-y-1 transition-transform cursor-pointer">
+            다시 도전하기 🔄
+        </button>
+    </section>
+
+    <!-- 시작 화면용 명예의 전당 TOP 10 모달 오버레이 -->
+    <section id="overlay-ranking" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-40 flex items-center justify-center p-4">
+        <div class="bg-[#FFFDF9] w-full max-h-[86%] rounded-3xl border-4 border-amber-300 shadow-2xl p-4 flex flex-col">
+            <div class="flex items-center justify-between pb-2.5 border-b-2 border-dashed border-amber-200">
+                <div>
+                    <h2 class="text-xl text-amber-600 flex items-center gap-1.5">
+                        👑 명예의 전당 TOP 10
+                    </h2>
+                    <p id="rt-badge-modal" class="text-[11px] text-emerald-600">● 실시간 랭킹 연동됨</p>
+                </div>
+                <button id="btn-close-ranking" type="button"
+                    class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-base cursor-pointer">
+                    ✕
+                </button>
+            </div>
+
+            <div id="leaderboard-modal-list" class="flex-1 overflow-y-auto custom-scroll py-2.5 space-y-1.5 pr-0.5">
+                <div class="text-center text-xs text-slate-400 py-8">순위를 불러오는 중입니다...</div>
+            </div>
+
+            <button id="btn-close-ranking-bottom" type="button"
+                class="w-full py-3 mt-1 rounded-2xl bg-amber-400 text-white text-base shadow-[0_4px_0_#d97706] active:translate-y-0.5 cursor-pointer">
+                닫기
+            </button>
+        </div>
+    </section>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+/**
+ * 낼름! 독사의 유혹 - 60초 타임어택 아케이드 + 실시간 TOP 10 랭킹
+ */
+
+// ==================== 0. Firebase Firestore 실시간 랭킹 엔진 ====================
+const NICKNAME_STORAGE_KEY = 'snake_temptation_nickname_v1';
+const FALLBACK_RANK_KEY = 'snake_temptation_fallback_ranks_v1';
+
+class RealtimeLeaderboard {
+    constructor() {
+        this.db = null;
+        this.auth = null;
+        this.user = null;
+        this.appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        this.isCloudReady = false;
+        this.rankings = [];
+        this.lastSubmittedDocId = null;
+        this.hasSubmittedCurrentRound = false;
+    }
+
+    async init() {
+        // 저장된 닉네임 복원
+        const savedNick = this.getSavedNickname();
+        const startInput = document.getElementById('input-nickname-start');
+        const resultInput = document.getElementById('input-nickname-result');
+        if (startInput && savedNick) startInput.value = savedNick;
+        if (resultInput && savedNick) resultInput.value = savedNick;
+
+        // 닉네임 입력창 양방향 동기화
+        if (startInput && resultInput) {
+            startInput.addEventListener('input', (e) => {
+                resultInput.value = e.target.value;
+                this.saveNickname(e.target.value);
+            });
+            resultInput.addEventListener('input', (e) => {
+                startInput.value = e.target.value;
+                this.saveNickname(e.target.value);
+            });
+        }
+
+        // 로컬 폴백 데이터 먼저 로드하여 즉시 표시
+        this.rankings = this.loadFallbackRankings();
+        this.renderAll();
+
+        try {
+            if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+                throw new Error('Firebase config not available');
+            }
+            const firebaseConfig = JSON.parse(__firebase_config);
+            const app = initializeApp(firebaseConfig);
+            this.auth = getAuth(app);
+            this.db = getFirestore(app);
+
+            // RULE 3: 인증을 먼저 완료한 후 Firestore 접근
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                const cred = await signInWithCustomToken(this.auth, __initial_auth_token);
+                this.user = cred.user;
+            } else {
+                const cred = await signInAnonymously(this.auth);
+                this.user = cred.user;
+            }
+
+            if (!this.user) return;
+
+            this.isCloudReady = true;
+            this.updateConnectionBadge(true);
+            this.subscribeRankings();
+        } catch (err) {
+            this.isCloudReady = false;
+            this.updateConnectionBadge(false);
+        }
+    }
+
+    subscribeRankings() {
+        if (!this.db || !this.user) return;
+        // RULE 1: 엄격한 Public 경로 준수
+        const colRef = collection(this.db, 'artifacts', this.appId, 'public', 'data', 'snake_rankings');
+
+        // RULE 2: 복합 쿼리 없이 전체 조회 후 메모리에서 정렬 및 TOP 10 슬라이스
+        onSnapshot(
+            colRef,
+            (snapshot) => {
+                const list = [];
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    list.push({
+                        id: docSnap.id,
+                        nickname: String(data.nickname || '익명독사').slice(0, 10),
+                        score: Number(data.score) || 0,
+                        maxCombo: Number(data.maxCombo) || 0,
+                        createdAt: Number(data.createdAt) || 0
+                    });
+                });
+
+                list.sort((a, b) => {
+                    if (b.score !== a.score) return b.score - a.score;
+                    if (b.maxCombo !== a.maxCombo) return b.maxCombo - a.maxCombo;
+                    return a.createdAt - b.createdAt;
+                });
+
+                this.rankings = list.slice(0, 10);
+                this.saveFallbackRankings(this.rankings);
+                this.renderAll();
+            },
+            () => {
+                this.updateConnectionBadge(false);
+            }
+        );
+    }
+
+    async submitScore(rawNickname, score, maxCombo) {
+        const cleanNick = (rawNickname || '').trim().slice(0, 10) || `독사#${Math.floor(100 + Math.random() * 900)}`;
+        this.saveNickname(cleanNick);
+        document.getElementById('input-nickname-start').value = cleanNick;
+        document.getElementById('input-nickname-result').value = cleanNick;
+
+        const payload = {
+            nickname: cleanNick,
+            score: Math.max(0, Math.floor(score)),
+            maxCombo: Math.max(0, Math.floor(maxCombo)),
+            uid: this.user ? this.user.uid : 'local-player',
+            createdAt: Date.now()
+        };
+
+        if (this.isCloudReady && this.db && this.user) {
+            const colRef = collection(this.db, 'artifacts', this.appId, 'public', 'data', 'snake_rankings');
+            const docRef = await addDoc(colRef, payload);
+            this.lastSubmittedDocId = docRef.id;
+            this.hasSubmittedCurrentRound = true;
+            return { ok: true, mode: 'cloud', nickname: cleanNick };
+        } else {
+            // 오프라인/폴백 모드 처리
+            const localId = 'local_' + Date.now();
+            const merged = [...this.rankings, { id: localId, ...payload }];
+            merged.sort((a, b) => (b.score - a.score) || (b.maxCombo - a.maxCombo) || (a.createdAt - b.createdAt));
+            this.rankings = merged.slice(0, 10);
+            this.lastSubmittedDocId = localId;
+            this.hasSubmittedCurrentRound = true;
+            this.saveFallbackRankings(this.rankings);
+            this.renderAll();
+            return { ok: true, mode: 'local', nickname: cleanNick };
+        }
+    }
+
+    getSavedNickname() {
+        try {
+            return localStorage.getItem(NICKNAME_STORAGE_KEY) || '';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    saveNickname(nick) {
+        try {
+            localStorage.setItem(NICKNAME_STORAGE_KEY, nick.slice(0, 10));
+        } catch (e) {}
+    }
+
+    loadFallbackRankings() {
+        try {
+            const raw = localStorage.getItem(FALLBACK_RANK_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) return parsed.slice(0, 10);
+            }
+        } catch (e) {}
+        return [];
+    }
+
+    saveFallbackRankings(list) {
+        try {
+            localStorage.setItem(FALLBACK_RANK_KEY, JSON.stringify(list.slice(0, 10)));
+        } catch (e) {}
+    }
+
+    updateConnectionBadge(isLive) {
+        const resBadge = document.getElementById('rt-badge-result');
+        const modBadge = document.getElementById('rt-badge-modal');
+        if (isLive) {
+            if (resBadge) {
+                resBadge.textContent = '● LIVE 실시간 동기화';
+                resBadge.className = 'text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded-full';
+            }
+            if (modBadge) {
+                modBadge.textContent = '● 전 세계 플레이어 실시간 순위 반영 중';
+                modBadge.className = 'text-[11px] text-emerald-600';
+            }
+        } else {
+            if (resBadge) {
+                resBadge.textContent = '● 로컬 기록 모드';
+                resBadge.className = 'text-[10px] bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded-full';
+            }
+            if (modBadge) {
+                modBadge.textContent = '● 오프라인 로컬 랭킹 표시 중';
+                modBadge.className = 'text-[11px] text-amber-600';
+            }
+        }
+    }
+
+    formatTimeAgo(ts) {
+        if (!ts) return '방금 전';
+        const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+        if (diffSec < 60) return '방금 전';
+        if (diffSec < 3600) return `${Math.floor(diffSec / 60)}분 전`;
+        if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}시간 전`;
+        const d = new Date(ts);
+        return `${d.getMonth() + 1}/${d.getDate()}`;
+    }
+
+    escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    renderListInto(containerEl) {
+        if (!containerEl) return;
+        if (!this.rankings || this.rankings.length === 0) {
+            containerEl.innerHTML = `
+                <div class="text-center py-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    <div class="text-2xl mb-1">🐍</div>
+                    <div class="text-xs text-slate-500">아직 등록된 랭킹이 없습니다.</div>
+                    <div class="text-[11px] text-rose-500 mt-0.5">첫 번째 명예의 전당 1위에 도전하세요!</div>
+                </div>
+            `;
+            return;
+        }
+
+        containerEl.innerHTML = this.rankings.map((item, idx) => {
+            const rank = idx + 1;
+            const isMine = this.lastSubmittedDocId && item.id === this.lastSubmittedDocId;
+
+            let badgeHtml = `<span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs flex items-center justify-center shrink-0">${rank}</span>`;
+            let rowStyle = 'bg-slate-50/90 border-slate-100';
+
+            if (rank === 1) {
+                badgeHtml = `<span class="w-6 h-6 rounded-full bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-xs flex items-center justify-center shadow-xs shrink-0">👑</span>`;
+                rowStyle = 'bg-gradient-to-r from-amber-50 to-yellow-50/70 border-amber-300';
+            } else if (rank === 2) {
+                badgeHtml = `<span class="w-6 h-6 rounded-full bg-gradient-to-br from-slate-200 to-slate-400 text-white text-xs flex items-center justify-center shadow-xs shrink-0">🥈</span>`;
+                rowStyle = 'bg-slate-50 border-slate-300';
+            } else if (rank === 3) {
+                badgeHtml = `<span class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-300 to-amber-700 text-white text-xs flex items-center justify-center shadow-xs shrink-0">🥉</span>`;
+                rowStyle = 'bg-orange-50/70 border-orange-200';
+            }
+
+            if (isMine) {
+                rowStyle = 'bg-rose-50 border-rose-400 ring-2 ring-rose-200';
+            }
+
+            return `
+                <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl border ${rowStyle} transition-all">
+                    <div class="flex items-center gap-2 min-w-0">
+                        ${badgeHtml}
+                        <div class="min-w-0">
+                            <div class="text-xs text-slate-800 truncate flex items-center gap-1">
+                                <span>${this.escapeHtml(item.nickname)}</span>
+                                ${isMine ? '<span class="text-[9px] bg-rose-500 text-white px-1.5 py-0.2 rounded-full">MY</span>' : ''}
+                            </div>
+                            <div class="text-[10px] text-slate-400">
+                                최대 ${item.maxCombo}콤보 · ${this.formatTimeAgo(item.createdAt)}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-rose-600 shrink-0 ml-2">
+                        ${item.score.toLocaleString()}점
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    renderAll() {
+        this.renderListInto(document.getElementById('leaderboard-result-list'));
+        this.renderListInto(document.getElementById('leaderboard-modal-list'));
+    }
+}
+
+const leaderboard = new RealtimeLeaderboard();
+
+// ==================== 1. Web Audio API 효과음 엔진 ====================
+class SoundFX {
+    constructor() {
+        this.ctx = null;
+        this.muted = false;
+    }
+
+    unlock() {
+        try {
+            if (!this.ctx) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) this.ctx = new AudioCtx();
+            }
+            if (this.ctx && this.ctx.state === 'suspended') {
+                this.ctx.resume();
+            }
+        } catch (e) {}
+    }
+
+    toggleMute() {
+        this.muted = !this.muted;
+        return this.muted;
+    }
+
+    tone(freq, type, duration, vol = 0.18, endFreq = null) {
+        if (this.muted || !this.ctx) return;
+        try {
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, now);
+            if (endFreq) {
+                osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+            }
+            gain.gain.setValueAtTime(vol, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + duration);
+        } catch (e) {}
+    }
+
+    tongue() {
+        this.tone(330, 'sine', 0.11, 0.14, 760);
+    }
+
+    perfect(combo) {
+        const boost = Math.min(combo * 14, 280);
+        this.tone(523.25 + boost, 'triangle', 0.11, 0.22);
+        setTimeout(() => this.tone(783.99 + boost, 'sine', 0.16, 0.22), 45);
+    }
+
+    good() {
+        this.tone(440, 'triangle', 0.13, 0.18, 554.37);
+    }
+
+    miss() {
+        this.tone(210, 'sine', 0.14, 0.1, 140);
+    }
+
+    bad(heavy = false) {
+        this.tone(155, 'sawtooth', 0.24, 0.22, 65);
+        if (heavy) {
+            setTimeout(() => this.tone(110, 'square', 0.28, 0.18, 50), 90);
+        }
+    }
+
+    fever() {
+        [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+            setTimeout(() => this.tone(f, 'triangle', 0.18, 0.22), i * 60);
+        });
+    }
+
+    charge() {
+        this.tone(580, 'sawtooth', 0.24, 0.1, 960);
+    }
+
+    beam() {
+        this.tone(980, 'square', 0.18, 0.14, 240);
+    }
+
+    end() {
+        this.tone(659.25, 'sine', 0.15, 0.2);
+        setTimeout(() => this.tone(523.25, 'sine', 0.35, 0.22), 150);
+    }
+}
+
+const sfx = new SoundFX();
+
+// ==================== 2. 10종 개체 정의 ====================
+const ENTITIES = {
+    // [유부녀 개체 - 타겟]
+    YUN_MIRAE: {
+        id: 'YUN_MIRAE', name: '윤미래', category: 'GOOD',
+        score: 100, speedMult: 1.0, radius: 34,
+        bg: '#FF9FF3', border: '#F368E0', desc: '안정적인 기본 하강 (+100)'
+    },
+    L2_FLATFISH: {
+        id: 'L2_FLATFISH', name: 'L2광어', category: 'GOOD',
+        score: 150, speedMult: 1.58, radius: 33,
+        bg: '#48DBFB', border: '#0ABDE3', desc: '미끄러지듯 초고속 하강 (+150)'
+    },
+    YUYUHAE: {
+        id: 'YUYUHAE', name: '유유해', category: 'GOOD',
+        score: 120, speedMult: 0.64, radius: 35,
+        bg: '#1DD1A1', border: '#10AC84', desc: '느긋한 훼이크 속도 (+120)'
+    },
+    PUMPKIN_60: {
+        id: 'PUMPKIN_60', name: '호박60', category: 'GOOD',
+        score: 130, speedMult: 1.1, radius: 36,
+        bg: '#FF9F43', border: '#EE5253', desc: '피버 게이지 2배 충전 (+130)',
+        doubleFever: true
+    },
+    OGEUMSU: {
+        id: 'OGEUMSU', name: '오금수', category: 'GOOD',
+        score: 160, speedMult: 1.04, radius: 34,
+        bg: '#FECA57', border: '#FF9F43', desc: '중간에 반대 레인으로 순간이동 (+160)',
+        laneSwitch: true
+    },
+
+    // [악성 개체 - 함정]
+    COYOTE: {
+        id: 'COYOTE', name: '코요태', category: 'BAD',
+        score: -100, speedMult: 1.15, radius: 32,
+        bg: '#8395A7', border: '#576574', desc: '2~3마리 떼지어 연속 출현 (-100)'
+    },
+    SCROOGE: {
+        id: 'SCROOGE', name: '스크루지', category: 'BAD',
+        score: -150, speedMult: 1.05, radius: 35,
+        bg: '#218C74', border: '#006266', desc: '콤보 & 피버 게이지 초기화 (-150)',
+        resetCombo: true
+    },
+    CHOI_SNAKE: {
+        id: 'CHOI_SNAKE', name: '최뱀', category: 'BAD',
+        score: -200, speedMult: 1.2, radius: 35,
+        bg: '#5F27CD', border: '#341F97', desc: '독사 1.2초 기절(조작 불가) (-200)',
+        stunDuration: 1.2
+    },
+    DRAGON_CASTLE: {
+        id: 'DRAGON_CASTLE', name: '드래곤캐슬', category: 'BAD',
+        score: -150, speedMult: 0.88, radius: 54,
+        bg: '#57606F', border: '#2F3542', desc: '거대 성 크기로 시야 방해 (-150)'
+    },
+    JICOLO: {
+        id: 'JICOLO', name: '지콜로', category: 'BAD',
+        score: -200, speedMult: 1.0, radius: 36,
+        bg: '#27AE60', border: '#8E44AD', desc: '공중 기 모으기 후 마관광살포 급강하 (-200)',
+        chargeDive: true
+    }
+};
+
+const GOOD_LIST = ['YUN_MIRAE', 'L2_FLATFISH', 'YUYUHAE', 'PUMPKIN_60', 'OGEUMSU'];
+const BAD_LIST = ['COYOTE', 'SCROOGE', 'CHOI_SNAKE', 'DRAGON_CASTLE', 'JICOLO'];
+
+// ==================== 3. 전용 벡터 일러스트 렌더러 ====================
+function drawEntityIllustration(c, id, cx, cy, r, isCharging = false) {
+    c.save();
+    c.translate(cx, cy);
+    const s = r / 32;
+    c.scale(s, s);
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+
+    switch (id) {
+        case 'YUN_MIRAE': {
+            // 웨이브 헤어 + 선글라스 + 하트 립
+            c.fillStyle = '#4A235A';
+            c.beginPath();
+            c.arc(0, -2, 16, Math.PI, Math.PI * 2);
+            c.lineTo(17, 14);
+            c.lineTo(-17, 14);
+            c.closePath();
+            c.fill();
+
+            // 얼굴
+            c.fillStyle = '#FDEBD0';
+            c.beginPath();
+            c.arc(0, 1, 12, 0, Math.PI * 2);
+            c.fill();
+
+            // 핑크 선글라스
+            c.fillStyle = '#FF3385';
+            c.strokeStyle = '#FFFFFF';
+            c.lineWidth = 1.6;
+            c.beginPath();
+            c.ellipse(-5.5, -1, 5, 3.5, -0.1, 0, Math.PI * 2);
+            c.ellipse(5.5, -1, 5, 3.5, 0.1, 0, Math.PI * 2);
+            c.fill();
+            c.stroke();
+
+            // 미소 입술
+            c.fillStyle = '#E84393';
+            c.beginPath();
+            c.arc(0, 6, 3.5, 0, Math.PI);
+            c.fill();
+            break;
+        }
+
+        case 'L2_FLATFISH': {
+            // 날렵한 하늘색 광어 일러스트
+            c.fillStyle = '#0984E3';
+            c.beginPath();
+            c.moveTo(14, 0);
+            c.lineTo(22, -8);
+            c.lineTo(19, 0);
+            c.lineTo(22, 8);
+            c.closePath();
+            c.fill();
+
+            // 몸통
+            c.fillStyle = '#74B9FF';
+            c.strokeStyle = '#FFFFFF';
+            c.lineWidth = 2;
+            c.beginPath();
+            c.ellipse(-2, 0, 17, 11, 0, 0, Math.PI * 2);
+            c.fill();
+            c.stroke();
+
+            // 지느러미 & 속도선
+            c.fillStyle = '#00CEC9';
+            c.beginPath();
+            c.moveTo(-4, -10);
+            c.lineTo(4, -16);
+            c.lineTo(6, -9);
+            c.closePath();
+            c.fill();
+
+            // 똘망한 두 눈 (광어 특징: 한쪽에 몰린 눈)
+            c.fillStyle = '#FFFFFF';
+            c.beginPath();
+            c.arc(-10, -3, 3.2, 0, Math.PI * 2);
+            c.arc(-10, 3, 3.2, 0, Math.PI * 2);
+            c.fill();
+            c.fillStyle = '#2D3436';
+            c.beginPath();
+            c.arc(-11, -3, 1.6, 0, Math.PI * 2);
+            c.arc(-11, 3, 1.6, 0, Math.PI * 2);
+            c.fill();
+            break;
+        }
+
+        case 'YUYUHAE': {
+            // 구름 위에서 낮잠 자는 느긋한 새싹 캐릭터
+            c.fillStyle = '#FFFFFF';
+            c.beginPath();
+            c.arc(-8, 7, 7, 0, Math.PI * 2);
+            c.arc(0, 5, 9, 0, Math.PI * 2);
+            c.arc(8, 7, 7, 0, Math.PI * 2);
+            c.fill();
+
+            // 머리
+            c.fillStyle = '#FFEAA7';
+            c.beginPath();
+            c.arc(0, -2, 10, 0, Math.PI * 2);
+            c.fill();
+
+            // 새싹 잎사귀
+            c.strokeStyle = '#00B894';
+            c.lineWidth = 2.5;
+            c.beginPath();
+            c.moveTo(0, -12);
+            c.lineTo(0, -17);
+            c.stroke();
+            c.fillStyle = '#55EFC4';
+            c.beginPath();
+            c.ellipse(5, -17, 5, 2.8, -0.3, 0, Math.PI * 2);
+            c.fill();
+
+            // 감은 평온한 눈
+            c.strokeStyle = '#2D3436';
+            c.lineWidth = 1.8;
+            c.beginPath();
+            c.arc(-4, -2, 2.5, 0, Math.PI);
+            c.arc(4, -2, 2.5, 0, Math.PI);
+            c.stroke();
+            break;
+        }
+
+        case 'PUMPKIN_60': {
+            // 황금 왕관 쓴 귀여운 호박 일러스트
+            c.fillStyle = '#E67E22';
+            c.strokeStyle = '#D35400';
+            c.lineWidth = 1.6;
+            c.beginPath();
+            c.ellipse(-8, 2, 7, 12, 0, 0, Math.PI * 2);
+            c.ellipse(8, 2, 7, 12, 0, 0, Math.PI * 2);
+            c.fill();
+            c.stroke();
+
+            c.fillStyle = '#F39C12';
+            c.beginPath();
+            c.ellipse(0, 2, 8.5, 13, 0, 0, Math.PI * 2);
+            c.fill();
+            c.stroke();
+
+            // 꼭지
+            c.fillStyle = '#27AE60';
+            c.fillRect(-2.5, -15, 5, 5);
+
+            // 웃는 눈 & 입
+            c.fillStyle = '#FFF200';
+            c.beginPath();
+            c.moveTo(-6, -2); c.lineTo(-3, -5); c.lineTo(-1, -2);
+            c.moveTo(6, -2); c.lineTo(3, -5); c.lineTo(1, -2);
+            c.fill();
+            c.beginPath();
+            c.arc(0, 4, 5, 0, Math.PI);
+            c.fill();
+            break;
+        }
+
+        case 'OGEUMSU': {
+            // 반짝이는 황금 별 요정 + 마법 모자
+            c.fillStyle = '#FFF200';
+            c.strokeStyle = '#F39C12';
+            c.lineWidth = 1.8;
+            c.beginPath();
+            for (let i = 0; i < 10; i++) {
+                const rad = i % 2 === 0 ? 17 : 8;
+                const ang = (i * Math.PI) / 5 - Math.PI / 2;
+                const px = Math.cos(ang) * rad;
+                const py = Math.sin(ang) * rad + 2;
+                if (i === 0) c.moveTo(px, py);
+                else c.lineTo(px, py);
+            }
+            c.closePath();
+            c.fill();
+            c.stroke();
+
+            // 귀여운 눈
+            c.fillStyle = '#2F3542';
+            c.beginPath();
+            c.arc(-4, 1, 2, 0, Math.PI * 2);
+            c.arc(4, 1, 2, 0, Math.PI * 2);
+            c.fill();
+            break;
+        }
+
+        case 'COYOTE': {
+            // 뾰족 귀 늑대/코요태
+            c.fillStyle = '#576574';
+            c.beginPath();
+            c.moveTo(-12, -4); c.lineTo(-14, -18); c.lineTo(-3, -10);
+            c.moveTo(12, -4); c.lineTo(14, -18); c.lineTo(3, -10);
+            c.fill();
+
+            // 얼굴
+            c.fillStyle = '#8395A7';
+            c.beginPath();
+            c.arc(0, 1, 13, 0, Math.PI * 2);
+            c.fill();
+
+            // 주둥이
+            c.fillStyle = '#DFE6E9';
+            c.beginPath();
+            c.ellipse(0, 6, 7, 5, 0, 0, Math.PI * 2);
+            c.fill();
+
+            // 코 & 매서운 눈
+            c.fillStyle = '#2D3436';
+            c.beginPath();
+            c.arc(0, 4, 2.5, 0, Math.PI * 2);
+            c.fill();
+
+            c.fillStyle = '#FF7675';
+            c.beginPath();
+            c.arc(-5, -2, 2.2, 0, Math.PI * 2);
+            c.arc(5, -2, 2.2, 0, Math.PI * 2);
+            c.fill();
+            break;
+        }
+
+        case 'SCROOGE': {
+            // 실크햇 + 외알 안경 + 욕심쟁이 표정
+            c.fillStyle = '#FDEBD0';
+            c.beginPath();
+            c.arc(0, 4, 12, 0, Math.PI * 2);
+            c.fill();
+
+            // 높은 실크햇
+            c.fillStyle = '#2D3436';
+            c.fillRect(-9, -18, 18, 13);
+            c.fillRect(-14, -6, 28, 3.5);
+            c.fillStyle = '#F1C40F';
+            c.fillRect(-9, -9, 18, 2.5);
+
+            // 외알 안경
+            c.strokeStyle = '#F1C40F';
+            c.lineWidth = 1.8;
+            c.beginPath();
+            c.arc(4.5, 2, 4, 0, Math.PI * 2);
+            c.stroke();
+
+            c.fillStyle = '#2D3436';
+            c.beginPath();
+            c.arc(-4.5, 2, 1.8, 0, Math.PI * 2);
+            c.arc(4.5, 2, 1.8, 0, Math.PI * 2);
+            c.fill();
+            break;
+        }
+
+        case 'CHOI_SNAKE': {
+            // 보라색 천적 독사 (날카로운 송곳니)
+            c.fillStyle = '#8E44AD';
+            c.strokeStyle = '#4A235A';
+            c.lineWidth = 2;
+            c.beginPath();
+            c.moveTo(0, -14);
+            c.quadraticCurveTo(16, -6, 13, 10);
+            c.quadraticCurveTo(0, 17, -13, 10);
+            c.quadraticCurveTo(-16, -6, 0, -14);
+            c.fill();
+            c.stroke();
+
+            // 노란 뱀 눈
+            c.fillStyle = '#F1C40F';
+            c.beginPath();
+            c.ellipse(-5, -2, 3.5, 2.3, 0.25, 0, Math.PI * 2);
+            c.ellipse(5, -2, 3.5, 2.3, -0.25, 0, Math.PI * 2);
+            c.fill();
+            c.fillStyle = '#000000';
+            c.fillRect(-5.6, -4, 1.2, 4);
+            c.fillRect(4.4, -4, 1.2, 4);
+
+            // 하얀 송곳니
+            c.fillStyle = '#FFFFFF';
+            c.beginPath();
+            c.moveTo(-6, 6); c.lineTo(-4, 13); c.lineTo(-2, 6);
+            c.moveTo(6, 6); c.lineTo(4, 13); c.lineTo(2, 6);
+            c.fill();
+            break;
+        }
+
+        case 'DRAGON_CASTLE': {
+            // 거대한 요새 성벽 + 붉은 깃발
+            c.fillStyle = '#636E72';
+            c.strokeStyle = '#2D3436';
+            c.lineWidth = 1.8;
+            c.fillRect(-15, -6, 30, 20);
+            c.strokeRect(-15, -6, 30, 20);
+
+            // 성가퀴 (요철)
+            c.fillRect(-16, -12, 7, 6);
+            c.fillRect(-3.5, -12, 7, 6);
+            c.fillRect(9, -12, 7, 6);
+
+            // 성문
+            c.fillStyle = '#2D3436';
+            c.beginPath();
+            c.arc(0, 14, 6, Math.PI, 0);
+            c.fill();
+
+            // 붉은 깃발
+            c.strokeStyle = '#DFE6E9';
+            c.beginPath();
+            c.moveTo(0, -12); c.lineTo(0, -21);
+            c.stroke();
+            c.fillStyle = '#FF4757';
+            c.beginPath();
+            c.moveTo(0, -21); c.lineTo(10, -18); c.lineTo(0, -15);
+            c.fill();
+            break;
+        }
+
+        case 'JICOLO': {
+            // 피콜로 패러디 '지콜로': 보라 도복, 하얀 망토 & 터번, 초록 피부, 뾰족 귀, 더듬이
+            c.fillStyle = '#6C3483';
+            c.beginPath();
+            c.ellipse(0, 17, 15, 8, 0, Math.PI, Math.PI * 2);
+            c.fill();
+
+            // 하얀 어깨 망토
+            c.fillStyle = '#FFFFFF';
+            c.strokeStyle = '#95A5A6';
+            c.lineWidth = 1.4;
+            c.beginPath();
+            c.moveTo(-7, 10); c.lineTo(-23, 8); c.lineTo(-17, 19); c.lineTo(-5, 17);
+            c.closePath();
+            c.fill();
+            c.stroke();
+
+            c.beginPath();
+            c.moveTo(7, 10); c.lineTo(23, 8); c.lineTo(17, 19); c.lineTo(5, 17);
+            c.closePath();
+            c.fill();
+            c.stroke();
+
+            // 초록 뾰족 귀
+            c.fillStyle = '#2ECC71';
+            c.strokeStyle = '#1E8449';
+            c.beginPath();
+            c.moveTo(-11, 0); c.lineTo(-20, -7); c.lineTo(-12, 6);
+            c.closePath();
+            c.fill();
+            c.stroke();
+
+            c.beginPath();
+            c.moveTo(11, 0); c.lineTo(20, -7); c.lineTo(12, 6);
+            c.closePath();
+            c.fill();
+            c.stroke();
+
+            // 초록 얼굴
+            c.beginPath();
+            c.ellipse(0, 2, 12.5, 13.5, 0, 0, Math.PI * 2);
+            c.fill();
+            c.stroke();
+
+            // 이마 더듬이 2개
+            c.strokeStyle = '#2ECC71';
+            c.lineWidth = 2.5;
+            c.beginPath();
+            c.moveTo(-5, -9); c.quadraticCurveTo(-10, -16, -13, -13);
+            c.moveTo(5, -9); c.quadraticCurveTo(10, -16, 13, -13);
+            c.stroke();
+
+            // 하얀 터번 + 보라 보석
+            c.fillStyle = '#FFFFFF';
+            c.strokeStyle = '#95A5A6';
+            c.lineWidth = 1.4;
+            c.beginPath();
+            c.ellipse(0, -11.5, 14.5, 8, 0, 0, Math.PI * 2);
+            c.fill();
+            c.stroke();
+
+            c.fillStyle = '#9B59B6';
+            c.beginPath();
+            c.arc(0, -11.5, 2.8, 0, Math.PI * 2);
+            c.fill();
+
+            // 매서운 눈썹 & 눈
+            c.strokeStyle = '#145A32';
+            c.lineWidth = 2;
+            c.beginPath();
+            c.moveTo(-8.5, -2); c.lineTo(-2, 1);
+            c.moveTo(8.5, -2); c.lineTo(2, 1);
+            c.stroke();
+
+            c.fillStyle = isCharging ? '#F1C40F' : '#FFFFFF';
+            c.beginPath();
+            c.ellipse(-5, 1.5, 3, 1.9, 0.15, 0, Math.PI * 2);
+            c.ellipse(5, 1.5, 3, 1.9, -0.15, 0, Math.PI * 2);
+            c.fill();
+
+            c.fillStyle = '#1C2833';
+            c.beginPath();
+            c.arc(-4.8, 1.5, 1.3, 0, Math.PI * 2);
+            c.arc(4.8, 1.5, 1.3, 0, Math.PI * 2);
+            c.fill();
+
+            // 진지한 일자 입
+            c.strokeStyle = '#145A32';
+            c.lineWidth = 1.7;
+            c.beginPath();
+            c.moveTo(-4, 8.5); c.lineTo(4, 8.5);
+            c.stroke();
+            break;
+        }
+    }
+
+    c.restore();
+}
+
+// ==================== 4. 도감 UI 자동 생성 ====================
+function buildCodexUI() {
+    const goodContainer = document.getElementById('codex-good');
+    const badContainer = document.getElementById('codex-bad');
+    goodContainer.innerHTML = '';
+    badContainer.innerHTML = '';
+
+    const createCard = (def, isSpanFull = false) => {
+        const card = document.createElement('div');
+        card.className = `flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-100 ${isSpanFull ? 'col-span-2 bg-emerald-50/60 border-emerald-200' : ''}`;
+
+        const miniCanvas = document.createElement('canvas');
+        miniCanvas.width = 48;
+        miniCanvas.height = 48;
+        miniCanvas.className = 'w-8 h-8 rounded-full shrink-0 border-2 border-white shadow-sm';
+        miniCanvas.style.backgroundColor = def.bg;
+        const mCtx = miniCanvas.getContext('2d');
+        drawEntityIllustration(mCtx, def.id, 24, 24, 18, false);
+
+        const info = document.createElement('div');
+        info.className = 'leading-tight overflow-hidden';
+        info.innerHTML = `
+            <div class="text-xs font-bold text-slate-800 truncate">${def.name}</div>
+            <div class="text-[10px] text-slate-500 leading-snug">${def.desc}</div>
+        `;
+
+        card.appendChild(miniCanvas);
+        card.appendChild(info);
+        return card;
+    };
+
+    GOOD_LIST.forEach((key, idx) => {
+        goodContainer.appendChild(createCard(ENTITIES[key], idx === GOOD_LIST.length - 1));
+    });
+
+    BAD_LIST.forEach((key, idx) => {
+        badContainer.appendChild(createCard(ENTITIES[key], idx === BAD_LIST.length - 1));
+    });
+}
+
+// ==================== 5. 게임 상태 & 캔버스 초기화 ====================
+const stageEl = document.getElementById('canvas-stage');
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const dom = {
+    score: document.getElementById('hud-score'),
+    combo: document.getElementById('hud-combo'),
+    comboBox: document.getElementById('hud-combo-box'),
+    statusPill: document.getElementById('hud-status-pill'),
+    barTimer: document.getElementById('bar-timer'),
+    txtTimer: document.getElementById('txt-timer'),
+    barFever: document.getElementById('bar-fever'),
+    txtFever: document.getElementById('txt-fever'),
+    overlayStart: document.getElementById('overlay-start'),
+    overlayResult: document.getElementById('overlay-result'),
+    overlayRanking: document.getElementById('overlay-ranking'),
+    resRank: document.getElementById('res-rank'),
+    resRankBadge: document.getElementById('res-rank-badge'),
+    resComment: document.getElementById('res-comment'),
+    resScore: document.getElementById('res-score'),
+    resCombo: document.getElementById('res-combo'),
+    resHits: document.getElementById('res-hits'),
+    resBad: document.getElementById('res-bad'),
+    inputNickResult: document.getElementById('input-nickname-result'),
+    btnSubmitScore: document.getElementById('btn-submit-score'),
+    submitStatusText: document.getElementById('submit-status-text'),
+    btnLeft: document.getElementById('btn-left'),
+    btnRight: document.getElementById('btn-right'),
+    btnMute: document.getElementById('btn-mute')
+};
+
+const GAME_DURATION = 60.0;
+const FEVER_NEED = 15;
+const FEVER_DURATION = 7.0;
+
+let viewW = 380;
+let viewH = 560;
+let dpr = 1;
+
+let state = {
+    running: false,
+    timeLeft: GAME_DURATION,
+    score: 0,
+    combo: 0,
+    maxCombo: 0,
+    perfectCount: 0,
+    goodCount: 0,
+    badHitCount: 0,
+    feverGauge: 0,
+    isFever: false,
+    feverTimer: 0,
+    spawnTimer: 0.5,
+    shakeTimer: 0,
+    shakeIntensity: 0
+};
+
+let snake = {
+    lookDir: 0,
+    tongueProg: 0,
+    tongueDir: 0,
+    tongueY: 0,
+    stunTimer: 0,
+    knockbackTimer: 0,
+    bounce: 0
+};
+
+let activeEntities = [];
+let particles = [];
+let popups = [];
+let lastTimestamp = 0;
+
+// 안전한 캔버스 크기 동기화 (절대 0이 되지 않도록 폴백 보장)
+function syncCanvasSize() {
+    const rect = stageEl.getBoundingClientRect();
+    viewW = Math.max(280, Math.floor(rect.width || stageEl.clientWidth || 380));
+    viewH = Math.max(360, Math.floor(rect.height || stageEl.clientHeight || 560));
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    canvas.width = Math.floor(viewW * dpr);
+    canvas.height = Math.floor(viewH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(() => {
+        syncCanvasSize();
+        if (!state.running) renderScene();
+    });
+    ro.observe(stageEl);
+}
+window.addEventListener('resize', () => {
+    syncCanvasSize();
+    if (!state.running) renderScene();
+});
+
+// ==================== 6. 게임 시작 / 종료 흐름 ====================
+function startGame() {
+    sfx.unlock();
+    syncCanvasSize();
+
+    state = {
+        running: true,
+        timeLeft: GAME_DURATION,
+        score: 0,
+        combo: 0,
+        maxCombo: 0,
+        perfectCount: 0,
+        goodCount: 0,
+        badHitCount: 0,
+        feverGauge: 0,
+        isFever: false,
+        feverTimer: 0,
+        spawnTimer: 0.4,
+        shakeTimer: 0,
+        shakeIntensity: 0
+    };
+
+    snake = {
+        lookDir: 0,
+        tongueProg: 0,
+        tongueDir: 0,
+        tongueY: viewH * 0.72,
+        stunTimer: 0,
+        knockbackTimer: 0,
+        bounce: 0
+    };
+
+    activeEntities = [];
+    particles = [];
+    popups = [];
+
+    leaderboard.hasSubmittedCurrentRound = false;
+    dom.btnSubmitScore.disabled = false;
+    dom.btnSubmitScore.textContent = '랭킹 등록';
+    dom.submitStatusText.textContent = '미등록';
+    dom.submitStatusText.className = 'text-slate-400';
+
+    dom.overlayStart.classList.add('hidden');
+    dom.overlayResult.classList.add('hidden');
+    dom.overlayRanking.classList.add('hidden');
+    updateHUD();
+
+    lastTimestamp = performance.now();
+    requestAnimationFrame(loop);
+}
+
+function endGame() {
+    state.running = false;
+    sfx.end();
+
+    let rank = 'C';
+    let comment = '조금 더 날렵한 혀놀림이 필요해요!';
+    if (state.score >= 5500) {
+        rank = 'S';
+        comment = '전설의 혀놀림! 완벽한 사냥꾼입니다!';
+    } else if (state.score >= 3800) {
+        rank = 'A';
+        comment = '대단해요! 프로급 타이밍 감각입니다!';
+    } else if (state.score >= 2000) {
+        rank = 'B';
+        comment = '준수한 실력! 피버 타임을 노려보세요!';
+    }
+
+    dom.resRank.textContent = rank;
+    if (dom.resRankBadge) dom.resRankBadge.textContent = `RANK ${rank}`;
+    dom.resComment.textContent = comment;
+    dom.resScore.textContent = `${state.score.toLocaleString()}점`;
+    dom.resCombo.textContent = state.maxCombo;
+    dom.resHits.textContent = `${state.perfectCount}/${state.goodCount}`;
+    dom.resBad.textContent = `${state.badHitCount}회`;
+
+    leaderboard.renderAll();
+    dom.overlayResult.classList.remove('hidden');
+}
+
+// ==================== 7. 개체 스폰 & 패턴 로직 ====================
+function getLaneX(lane) {
+    return lane === 0 ? viewW * 0.27 : viewW * 0.73;
+}
+
+function getHitZoneY() {
+    return viewH * 0.71;
+}
+
+function spawnEntity(key, lane, yOffset = 0) {
+    const def = ENTITIES[key];
+    // 피버 모드 중에는 모든 악성 개체가 황금 유부녀 개체로 변환!
+    const actualDef = (state.isFever && def.category === 'BAD')
+        ? ENTITIES[GOOD_LIST[Math.floor(Math.random() * GOOD_LIST.length)]]
+        : def;
+
+    const elapsedRatio = 1 - (state.timeLeft / GAME_DURATION);
+    const baseSpeed = Math.max(230, viewH * 0.44);
+
+    activeEntities.push({
+        type: actualDef,
+        lane,
+        x: getLaneX(lane),
+        y: -45 + yOffset,
+        speed: baseSpeed * actualDef.speedMult * (1 + elapsedRatio * 0.28),
+        wobble: Math.random() * Math.PI * 2,
+        switched: false,
+        chargeState: 0, // 0: 일반하강, 1: 공중 기 모으기, 2: 마관광살포 급강하
+        chargeTimer: 0,
+        isGolden: state.isFever
+    });
+}
+
+function spawnWave() {
+    const progress = 1 - (state.timeLeft / GAME_DURATION);
+    const roll = Math.random();
+
+    // 패턴 1: 코요태 떼거리 출현 (2~3마리 연속)
+    if (!state.isFever && roll < 0.16) {
+        const lane = Math.random() < 0.5 ? 0 : 1;
+        const count = Math.random() < 0.5 ? 2 : 3;
+        for (let i = 0; i < count; i++) {
+            spawnEntity('COYOTE', lane, -i * 88);
+        }
+        // 반대 레인에 유부녀 보너스 배치
+        const goodKey = GOOD_LIST[Math.floor(Math.random() * GOOD_LIST.length)];
+        spawnEntity(goodKey, 1 - lane, -44);
+        state.spawnTimer = Math.max(0.75, 1.15 - progress * 0.3);
+        return;
+    }
+
+    // 패턴 2: 양쪽 동시 출현 (타겟 vs 함정 또는 더블 타겟)
+    if (roll < 0.42) {
+        const goodLane = Math.random() < 0.5 ? 0 : 1;
+        const goodKey = GOOD_LIST[Math.floor(Math.random() * GOOD_LIST.length)];
+        spawnEntity(goodKey, goodLane, 0);
+
+        if (Math.random() < 0.68) {
+            const badPool = ['SCROOGE', 'CHOI_SNAKE', 'DRAGON_CASTLE', 'JICOLO'];
+            const badKey = badPool[Math.floor(Math.random() * badPool.length)];
+            spawnEntity(badKey, 1 - goodLane, -24);
+        } else {
+            const goodKey2 = GOOD_LIST[Math.floor(Math.random() * GOOD_LIST.length)];
+            spawnEntity(goodKey2, 1 - goodLane, -55);
+        }
+        state.spawnTimer = Math.max(0.65, 1.02 - progress * 0.3);
+        return;
+    }
+
+    // 패턴 3: 단일 개체 출현 (타겟 70% / 함정 30%)
+    const lane = Math.random() < 0.5 ? 0 : 1;
+    const key = Math.random() < 0.70
+        ? GOOD_LIST[Math.floor(Math.random() * GOOD_LIST.length)]
+        : BAD_LIST[Math.floor(Math.random() * BAD_LIST.length)];
+
+    spawnEntity(key, lane, 0);
+    state.spawnTimer = Math.max(0.42, 0.78 - progress * 0.28);
+}
+
+// ==================== 8. 입력 & 타이밍 판정 ====================
+function triggerTongue(lane) {
+    if (!state.running) return;
+    sfx.unlock();
+
+    // 기절 상태 체크 (최뱀 피격 시)
+    if (snake.stunTimer > 0) {
+        addPopup(viewW * 0.5, viewH * 0.82, '기절 중! 움직일 수 없어!', '#8E44AD', 15);
+        return;
+    }
+
+    const hitY = getHitZoneY();
+    const targetX = getLaneX(lane);
+
+    snake.lookDir = lane === 0 ? -1 : 1;
+    snake.tongueDir = snake.lookDir;
+    snake.tongueProg = 1.0;
+    snake.tongueY = hitY;
+    snake.bounce = 1.0;
+    sfx.tongue();
+
+    // 해당 레인에서 타격 범위 내 가장 가까운 개체 탐색
+    const maxRange = 92;
+    let bestIdx = -1;
+    let bestDist = Infinity;
+
+    for (let i = 0; i < activeEntities.length; i++) {
+        const ent = activeEntities[i];
+        if (ent.lane !== lane) continue;
+        const dist = Math.abs(ent.y - hitY);
+        if (dist <= maxRange && dist < bestDist) {
+            bestDist = dist;
+            bestIdx = i;
+        }
+    }
+
+    // 헛스윙 (MISS)
+    if (bestIdx === -1) {
+        sfx.miss();
+        addPopup(targetX, hitY - 24, '허공 낼름!', '#95A5A6', 15);
+        return;
+    }
+
+    const hitEnt = activeEntities[bestIdx];
+    activeEntities.splice(bestIdx, 1);
+
+    // A. 유부녀 개체 명중
+    if (hitEnt.type.category === 'GOOD') {
+        const isPerfect = bestDist <= 38;
+        const mult = state.isFever ? 2 : 1;
+        const bonus = isPerfect ? 40 : 0;
+        const gained = (hitEnt.type.score + bonus) * mult;
+
+        state.score += gained;
+        state.combo += 1;
+        if (state.combo > state.maxCombo) state.maxCombo = state.combo;
+
+        if (isPerfect) {
+            state.perfectCount += 1;
+            sfx.perfect(state.combo);
+        } else {
+            state.goodCount += 1;
+            sfx.good();
+        }
+
+        // 콤보 박스 팝 애니메이션
+        dom.comboBox.style.transform = 'scale(1.14)';
+        setTimeout(() => { dom.comboBox.style.transform = 'scale(1)'; }, 90);
+
+        // 피버 게이지 충전
+        if (!state.isFever) {
+            const gaugeAdd = hitEnt.type.doubleFever ? 2 : 1;
+            state.feverGauge = Math.min(FEVER_NEED, state.feverGauge + gaugeAdd);
+            if (state.feverGauge >= FEVER_NEED) {
+                activateFever();
+            }
+        }
+
+        const label = state.isFever
+            ? `FEVER x2! +${gained}`
+            : (isPerfect ? `PERFECT! +${gained}` : `GOOD! +${gained}`);
+        const color = isPerfect ? '#FF3F80' : '#10AC84';
+
+        addPopup(targetX, hitY - 26, label, color, isPerfect ? 21 : 18);
+        spawnParticles(targetX, hitEnt.y, hitEnt.type.bg, isPerfect ? 16 : 10, true);
+    } else {
+        // B. 악성 개체 피격
+        state.badHitCount += 1;
+        const penalty = Math.abs(hitEnt.type.score);
+        state.score = Math.max(0, state.score - penalty);
+        triggerShake(0.28, 9);
+
+        if (hitEnt.type.stunDuration) {
+            // 최뱀: 독사 기절
+            sfx.bad(true);
+            state.combo = 0;
+            snake.stunTimer = hitEnt.type.stunDuration;
+            addPopup(targetX, hitY - 28, `최뱀 독에 기절! -${penalty}`, '#8E44AD', 19);
+        } else if (hitEnt.type.resetCombo) {
+            // 스크루지: 콤보 & 피버 초기화
+            sfx.bad(false);
+            state.combo = 0;
+            state.feverGauge = 0;
+            addPopup(targetX, hitY - 28, `콤보·게이지 몰수! -${penalty}`, '#16A085', 19);
+        } else if (hitEnt.type.chargeDive) {
+            // 지콜로: 마관광살포 넉백
+            sfx.bad(true);
+            state.combo = 0;
+            snake.knockbackTimer = 0.7;
+            addPopup(targetX, hitY - 28, `마관광살포 피격! -${penalty}`, '#27AE60', 19);
+            spawnParticles(targetX, hitEnt.y, '#9B59B6', 18, false);
+        } else {
+            // 코요태 / 드래곤캐슬
+            sfx.bad(false);
+            state.combo = 0;
+            addPopup(targetX, hitY - 28, `악성 터치! -${penalty}`, '#EE5253', 19);
+        }
+
+        spawnParticles(targetX, hitEnt.y, '#576574', 12, false);
+    }
+
+    updateHUD();
+}
+
+function activateFever() {
+    state.isFever = true;
+    state.feverTimer = FEVER_DURATION;
+    sfx.fever();
+    triggerShake(0.22, 6);
+    addPopup(viewW * 0.5, viewH * 0.45, '🔥 독사의 본능! 점수 2배! 🔥', '#FF9F1A', 24);
+
+    // 화면에 이미 떠 있는 모든 악성 개체를 유부녀 개체로 황금 변환!
+    activeEntities.forEach(ent => {
+        ent.isGolden = true;
+        if (ent.type.category === 'BAD') {
+            ent.type = ENTITIES[GOOD_LIST[Math.floor(Math.random() * GOOD_LIST.length)]];
+            ent.chargeState = 0;
+            spawnParticles(ent.x, ent.y, '#FFD32A', 10, true);
+        }
+    });
+}
+
+function triggerShake(duration, intensity) {
+    state.shakeTimer = duration;
+    state.shakeIntensity = intensity;
+}
+
+function spawnParticles(x, y, color, count, isHeart) {
+    for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+        const speed = 70 + Math.random() * 160;
+        particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 40,
+            life: 0.45 + Math.random() * 0.25,
+            maxLife: 0.7,
+            size: 4 + Math.random() * 5,
+            color,
+            isHeart
+        });
+    }
+}
+
+function addPopup(x, y, text, color, size = 18) {
+    popups.push({
+        x: Math.max(75, Math.min(viewW - 75, x)),
+        y,
+        text,
+        color,
+        size,
+        life: 0.85,
+        maxLife: 0.85
+    });
+}
+
+// ==================== 9. HUD 업데이트 ====================
+function updateHUD() {
+    dom.score.textContent = state.score.toLocaleString();
+    dom.combo.textContent = state.combo;
+
+    const timeRatio = Math.max(0, (state.timeLeft / GAME_DURATION) * 100);
+    dom.barTimer.style.width = `${timeRatio}%`;
+    dom.txtTimer.textContent = `남은 시간 ${Math.max(0, state.timeLeft).toFixed(1)}초`;
+
+    if (state.isFever) {
+        const feverRatio = Math.max(0, (state.feverTimer / FEVER_DURATION) * 100);
+        dom.barFever.style.width = `${feverRatio}%`;
+        dom.txtFever.textContent = `🔥 FEVER TIME! (${state.feverTimer.toFixed(1)}초)`;
+        dom.statusPill.textContent = '✨ 모든 개체 점수 2배 적용 중!';
+        dom.statusPill.className = 'text-xs text-amber-600 font-bold';
+    } else {
+        const gaugeRatio = (state.feverGauge / FEVER_NEED) * 100;
+        dom.barFever.style.width = `${gaugeRatio}%`;
+        dom.txtFever.textContent = `🔥 독사의 본능 (${state.feverGauge} / ${FEVER_NEED} COMBO)`;
+        dom.statusPill.textContent = snake.stunTimer > 0 ? '💫 독사가 기절했습니다!' : '좌·우 타이밍에 맞춰 낼름!';
+        dom.statusPill.className = snake.stunTimer > 0 ? 'text-xs text-purple-600 font-bold' : 'text-xs text-slate-500';
+    }
+}
+
+// ==================== 10. 메인 업데이트 & 렌더링 루프 ====================
+function update(dt) {
+    if (!state.running) return;
+
+    // 1. 제한 시간 카운트다운
+    state.timeLeft -= dt;
+    if (state.timeLeft <= 0) {
+        state.timeLeft = 0;
+        updateHUD();
+        endGame();
+        return;
+    }
+
+    // 2. 피버 타임 타이머
+    if (state.isFever) {
+        state.feverTimer -= dt;
+        if (state.feverTimer <= 0) {
+            state.isFever = false;
+            state.feverGauge = 0;
+        }
+    }
+
+    // 3. 독사 & 카메라 애니메이션 타이머
+    if (snake.stunTimer > 0) snake.stunTimer = Math.max(0, snake.stunTimer - dt);
+    if (snake.knockbackTimer > 0) snake.knockbackTimer = Math.max(0, snake.knockbackTimer - dt);
+    if (snake.tongueProg > 0) snake.tongueProg = Math.max(0, snake.tongueProg - dt * 6.8);
+    if (snake.bounce > 0) snake.bounce = Math.max(0, snake.bounce - dt * 5.2);
+    if (state.shakeTimer > 0) state.shakeTimer = Math.max(0, state.shakeTimer - dt);
+
+    // 4. 개체 스폰 타이머
+    state.spawnTimer -= dt;
+    if (state.spawnTimer <= 0) {
+        spawnWave();
+    }
+
+    // 5. 개체 이동 및 특수 기믹 처리
+    const hitY = getHitZoneY();
+    for (let i = activeEntities.length - 1; i >= 0; i--) {
+        const ent = activeEntities[i];
+        ent.wobble += dt * 5;
+        ent.x = getLaneX(ent.lane);
+
+        // 지콜로 특수 기믹: 공중 34% 위치에서 기를 모은 후 마관광살포 초고속 급강하!
+        if (ent.type.chargeDive) {
+            if (ent.chargeState === 0) {
+                ent.y += ent.speed * dt;
+                if (ent.y >= viewH * 0.34) {
+                    ent.chargeState = 1;
+                    ent.chargeTimer = 0.55;
+                    sfx.charge();
+                    addPopup(ent.x, ent.y - 36, '마관광살포...!', '#8E44AD', 15);
+                }
+            } else if (ent.chargeState === 1) {
+                ent.chargeTimer -= dt;
+                if (ent.chargeTimer <= 0) {
+                    ent.chargeState = 2;
+                    sfx.beam();
+                    spawnParticles(ent.x, ent.y, '#F1C40F', 10, false);
+                }
+            } else {
+                ent.y += ent.speed * 2.3 * dt;
+            }
+        } else {
+            ent.y += ent.speed * dt;
+        }
+
+        // 오금수 특수 기믹: 42% 지점에서 반대편 레인으로 뿅! 순간이동
+        if (ent.type.laneSwitch && !ent.switched && ent.y >= viewH * 0.42) {
+            ent.switched = true;
+            spawnParticles(ent.x, ent.y, '#FECA57', 8, true);
+            ent.lane = 1 - ent.lane;
+            ent.x = getLaneX(ent.lane);
+            spawnParticles(ent.x, ent.y, '#FECA57', 8, true);
+            addPopup(ent.x, ent.y - 24, '뿅! 레인 이동!', '#E67E22', 14);
+        }
+
+        // 화면 하단 이탈 판정
+        if (ent.y > viewH + 55) {
+            if (ent.type.category === 'GOOD' && !state.isFever) {
+                // 유부녀 개체를 놓치면 콤보 초기화
+                if (state.combo > 0) {
+                    state.combo = 0;
+                    addPopup(ent.x, hitY + 24, 'MISS!', '#95A5A6', 14);
+                }
+            }
+            activeEntities.splice(i, 1);
+        }
+    }
+
+    // 6. 파티클 업데이트
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 260 * dt;
+        p.life -= dt;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+
+    // 7. 플로팅 텍스트 업데이트
+    for (let i = popups.length - 1; i >= 0; i--) {
+        const pop = popups[i];
+        pop.y -= 42 * dt;
+        pop.life -= dt;
+        if (pop.life <= 0) popups.splice(i, 1);
+    }
+
+    updateHUD();
+}
+
+function drawRoundedRect(c, x, y, w, h, r) {
+    const radius = Math.min(r, w / 2, h / 2);
+    c.beginPath();
+    c.moveTo(x + radius, y);
+    c.lineTo(x + w - radius, y);
+    c.quadraticCurveTo(x + w, y, x + w, y + radius);
+    c.lineTo(x + w, y + h - radius);
+    c.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+    c.lineTo(x + radius, y + h);
+    c.quadraticCurveTo(x, y + h, x, y + h - radius);
+    c.lineTo(x, y + radius);
+    c.quadraticCurveTo(x, y, x + radius, y);
+    c.closePath();
+}
+
+function renderScene() {
+    ctx.save();
+
+    // 화면 흔들림 이펙트
+    if (state.shakeTimer > 0) {
+        const dx = (Math.random() - 0.5) * state.shakeIntensity * 2;
+        const dy = (Math.random() - 0.5) * state.shakeIntensity * 2;
+        ctx.translate(dx, dy);
+    }
+
+    // 1. 화사한 파스텔 배경 & 피버 오라
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, viewH);
+    if (state.isFever) {
+        bgGrad.addColorStop(0, '#FFF6D6');
+        bgGrad.addColorStop(1, '#FFE4EC');
+    } else {
+        bgGrad.addColorStop(0, '#FFFDF9');
+        bgGrad.addColorStop(1, '#FFF3E6');
+    }
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, viewW, viewH);
+
+    // 2. 좌/우 레인 트랙 가이드
+    const leftX = getLaneX(0);
+    const rightX = getLaneX(1);
+    const hitY = getHitZoneY();
+
+    [leftX, rightX].forEach((lx, idx) => {
+        ctx.fillStyle = idx === 0 ? 'rgba(255, 118, 117, 0.05)' : 'rgba(116, 185, 255, 0.06)';
+        drawRoundedRect(ctx, lx - 48, 12, 96, viewH - 24, 28);
+        ctx.fill();
+
+        // 중앙 점선 레일
+        ctx.strokeStyle = idx === 0 ? 'rgba(255, 118, 117, 0.25)' : 'rgba(116, 185, 255, 0.28)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 8]);
+        ctx.beginPath();
+        ctx.moveTo(lx, 20);
+        ctx.lineTo(lx, hitY - 40);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    });
+
+    // 3. 타격 판정 존 (Hit Zone 과녁)
+    [leftX, rightX].forEach((lx, idx) => {
+        const pulse = Math.sin(performance.now() * 0.008) * 3;
+        ctx.beginPath();
+        ctx.arc(lx, hitY, 40 + pulse, 0, Math.PI * 2);
+        ctx.fillStyle = state.isFever
+            ? 'rgba(255, 211, 42, 0.28)'
+            : (idx === 0 ? 'rgba(255, 107, 129, 0.14)' : 'rgba(84, 160, 255, 0.14)');
+        ctx.fill();
+
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = state.isFever ? '#FFA502' : (idx === 0 ? '#FF6B81' : '#54A0FF');
+        ctx.setLineDash([6, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = idx === 0 ? '#FF6B81' : '#2E86DE';
+        ctx.font = '11px "Jua", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('HIT!', lx, hitY);
+    });
+
+    // 4. 내려오는 개체 카드 렌더링
+    activeEntities.forEach(ent => {
+        drawEntityCard(ent);
+    });
+
+    // 5. 독사 혀 낼름 애니메이션 (개체 위, 독사 머리 아래 레이어)
+    const snakeX = viewW * 0.5;
+    const snakeY = viewH - 52;
+    if (snake.tongueProg > 0 && snake.tongueDir !== 0) {
+        const targetX = snake.tongueDir === -1 ? leftX : rightX;
+        const reach = Math.sin(snake.tongueProg * Math.PI);
+        const tipX = snakeX + (targetX - snakeX) * reach;
+        const tipY = (snakeY - 12) + (snake.tongueY - (snakeY - 12)) * reach;
+
+        ctx.save();
+        ctx.strokeStyle = '#FF2E63';
+        ctx.lineWidth = 9;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(snakeX, snakeY - 12);
+        ctx.quadraticCurveTo(snakeX, tipY + 18, tipX, tipY);
+        ctx.stroke();
+
+        // 갈라진 뱀 혀 끝 (Y자 포크)
+        const forkAngle = Math.atan2(tipY - (snakeY - 12), tipX - snakeX);
+        ctx.lineWidth = 4.5;
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(tipX + Math.cos(forkAngle - 0.45) * 14, tipY + Math.sin(forkAngle - 0.45) * 14);
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(tipX + Math.cos(forkAngle + 0.45) * 14, tipY + Math.sin(forkAngle + 0.45) * 14);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // 6. 하단 중앙 귀여운 캐주얼 독사 캐릭터
+    drawViperCharacter(snakeX, snakeY);
+
+    // 7. 파티클 & 팝업 텍스트
+    particles.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    });
+
+    popups.forEach(pop => {
+        ctx.save();
+        const alpha = Math.min(1, (pop.life / pop.maxLife) * 1.4);
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.font = `${pop.size}px "Jua", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.strokeText(pop.text, pop.x, pop.y);
+        ctx.fillStyle = pop.color;
+        ctx.fillText(pop.text, pop.x, pop.y);
+        ctx.restore();
+    });
+
+    // 지콜로 마관광살포 피격 시 보라빛 에너지 잔상
+    if (snake.knockbackTimer > 0) {
+        ctx.fillStyle = `rgba(142, 68, 173, ${snake.knockbackTimer * 0.3})`;
+        ctx.fillRect(0, 0, viewW, viewH);
+    }
+
+    ctx.restore();
+}
+
+function drawEntityCard(ent) {
+    const { x, y, type, wobble } = ent;
+    const r = type.radius;
+    const tilt = ent.chargeState === 1 ? (Math.random() - 0.5) * 0.24 : Math.sin(wobble) * 0.06;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(tilt);
+
+    // 지콜로 마관광살포 기 모으기 / 급강하 빛줄기 이펙트
+    if (type.id === 'JICOLO' && (ent.chargeState === 1 || ent.chargeState === 2)) {
+        const pulse = Math.sin(performance.now() * 0.035) * 5;
+        ctx.beginPath();
+        ctx.arc(0, 0, r + 13 + pulse, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(155, 89, 182, 0.32)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(0, 0, r + 7, 0, Math.PI * 2);
+        ctx.strokeStyle = '#F1C40F';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        if (ent.chargeState === 2) {
+            ctx.fillStyle = 'rgba(241, 196, 15, 0.35)';
+            ctx.fillRect(-9, -85, 18, 85);
+            ctx.strokeStyle = '#8E44AD';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, -80);
+            ctx.lineTo(0, 0);
+            ctx.stroke();
+        }
+    }
+
+    // 그림자
+    ctx.beginPath();
+    ctx.arc(0, 5, r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+    ctx.fill();
+
+    // 스티커 원형 배경
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fillStyle = ent.isGolden ? '#FFD32A' : type.bg;
+    ctx.fill();
+
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.stroke();
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = ent.isGolden ? '#FF9F1A' : type.border;
+    ctx.stroke();
+
+    // 악성 개체 경고 점선 링
+    if (type.category === 'BAD' && !ent.isGolden) {
+        ctx.beginPath();
+        ctx.arc(0, 0, r - 5, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    // 전용 벡터 일러스트 렌더링
+    drawEntityIllustration(ctx, type.id, 0, -4, r * 0.85, ent.chargeState === 1);
+
+    // 하단 이름표 캡슐
+    const labelW = Math.max(54, type.name.length * 11 + 14);
+    const labelH = 19;
+    const labelY = r - 7;
+
+    drawRoundedRect(ctx, -labelW / 2, labelY, labelW, labelH, 9.5);
+    ctx.fillStyle = (type.category === 'GOOD' || ent.isGolden) ? '#FFFFFF' : '#2F3542';
+    ctx.fill();
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = (type.category === 'GOOD' || ent.isGolden) ? type.border : '#FF4757';
+    ctx.stroke();
+
+    ctx.fillStyle = (type.category === 'GOOD' || ent.isGolden) ? '#2F3542' : '#FFFFFF';
+    ctx.font = '12px "Jua", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(type.name, 0, labelY + labelH / 2 + 0.5);
+
+    ctx.restore();
+}
+
+function drawViperCharacter(x, y) {
+    ctx.save();
+    const scaleY = 1 + snake.bounce * 0.14;
+    const scaleX = 1 - snake.bounce * 0.08;
+    const knockY = snake.knockbackTimer > 0 ? Math.sin(snake.knockbackTimer * Math.PI) * 16 : 0;
+
+    ctx.translate(x, y + knockY);
+    ctx.scale(scaleX, scaleY);
+
+    // 피버 모드 황금 후광
+    if (state.isFever) {
+        const glowR = 54 + Math.sin(performance.now() * 0.02) * 5;
+        ctx.beginPath();
+        ctx.arc(0, -6, glowR, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 211, 42, 0.32)';
+        ctx.fill();
+    }
+
+    // 목/몸통
+    ctx.fillStyle = state.isFever ? '#FDCB6E' : '#2ED573';
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 4;
+    drawRoundedRect(ctx, -20, 8, 40, 44, 16);
+    ctx.fill();
+    ctx.stroke();
+
+    // 배 무늬
+    ctx.fillStyle = '#FFEAA7';
+    drawRoundedRect(ctx, -11, 14, 22, 34, 10);
+    ctx.fill();
+
+    // 독사 머리
+    ctx.fillStyle = state.isFever ? '#FFA502' : '#2ED573';
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 4.5;
+    ctx.beginPath();
+    ctx.ellipse(0, -8, 36, 28, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // 외곽 진한 테두리
+    ctx.strokeStyle = state.isFever ? '#E67E22' : '#1EAE5D';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 볼터치
+    ctx.fillStyle = 'rgba(255, 107, 129, 0.5)';
+    ctx.beginPath();
+    ctx.ellipse(-20, -1, 6, 4, 0, 0, Math.PI * 2);
+    ctx.ellipse(20, -1, 6, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 눈 (기절 상태 vs 일반/피버 상태)
+    const eyeShiftX = snake.lookDir * 4;
+    if (snake.stunTimer > 0) {
+        // 기절 X_X 눈
+        ctx.strokeStyle = '#2F3542';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        [-13, 13].forEach(ex => {
+            ctx.beginPath();
+            ctx.moveTo(ex - 4, -15); ctx.lineTo(ex + 4, -7);
+            ctx.moveTo(ex + 4, -15); ctx.lineTo(ex - 4, -7);
+            ctx.stroke();
+        });
+
+        // 머리 위 빙글빙글 별
+        const spin = performance.now() * 0.008;
+        ctx.fillStyle = '#FFD32A';
+        ctx.font = '14px sans-serif';
+        ctx.fillText('💫', Math.cos(spin) * 24, -38 + Math.sin(spin) * 4);
+    } else {
+        // 큰 흰자위 + 시선 방향 눈동자
+        [-13, 13].forEach(ex => {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(ex, -11, 8.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#2F3542';
+            ctx.beginPath();
+            ctx.arc(ex + eyeShiftX * 0.7, -11, 4.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(ex + eyeShiftX * 0.7 - 1.5, -12.5, 1.6, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    // 귀여운 입매
+    ctx.strokeStyle = '#1E8449';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(-4, -1, 4, 0, Math.PI);
+    ctx.arc(4, -1, 4, 0, Math.PI);
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+function loop(timestamp) {
+    if (!state.running) return;
+    const dt = Math.min(0.05, (timestamp - lastTimestamp) / 1000);
+    lastTimestamp = timestamp;
+
+    update(dt);
+    renderScene();
+
+    if (state.running) {
+        requestAnimationFrame(loop);
+    }
+}
+
+// ==================== 11. 버튼 & 키보드 이벤트 바인딩 ====================
+function bindPressButton(btnEl, lane) {
+    const onPress = (e) => {
+        if (e.cancelable) e.preventDefault();
+        btnEl.classList.add('is-pressed');
+        triggerTongue(lane);
+    };
+    const onRelease = () => {
+        btnEl.classList.remove('is-pressed');
+    };
+
+    btnEl.addEventListener('pointerdown', onPress);
+    btnEl.addEventListener('pointerup', onRelease);
+    btnEl.addEventListener('pointerleave', onRelease);
+    btnEl.addEventListener('pointercancel', onRelease);
+}
+
+bindPressButton(dom.btnLeft, 0);
+bindPressButton(dom.btnRight, 1);
+
+window.addEventListener('keydown', (e) => {
+    if (e.repeat) return;
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        dom.btnLeft.classList.add('is-pressed');
+        triggerTongue(0);
+    } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        dom.btnRight.classList.add('is-pressed');
+        triggerTongue(1);
+    }
+});
+
+window.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        dom.btnLeft.classList.remove('is-pressed');
+    } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        dom.btnRight.classList.remove('is-pressed');
+    }
+});
+
+dom.btnMute.addEventListener('click', () => {
+    const muted = sfx.toggleMute();
+    dom.btnMute.textContent = muted ? '🔇' : '🔊';
+});
+
+document.getElementById('btn-start').addEventListener('click', startGame);
+document.getElementById('btn-restart').addEventListener('click', startGame);
+
+// 명예의 전당 모달 열기/닫기
+document.getElementById('btn-open-ranking').addEventListener('click', () => {
+    leaderboard.renderAll();
+    dom.overlayRanking.classList.remove('hidden');
+});
+document.getElementById('btn-close-ranking').addEventListener('click', () => {
+    dom.overlayRanking.classList.add('hidden');
+});
+document.getElementById('btn-close-ranking-bottom').addEventListener('click', () => {
+    dom.overlayRanking.classList.add('hidden');
+});
+
+// 결과 화면 실시간 랭킹 등록 버튼
+dom.btnSubmitScore.addEventListener('click', async () => {
+    if (leaderboard.hasSubmittedCurrentRound) return;
+    dom.btnSubmitScore.disabled = true;
+    dom.btnSubmitScore.textContent = '등록 중...';
+
+    try {
+        const res = await leaderboard.submitScore(
+            dom.inputNickResult.value,
+            state.score,
+            state.maxCombo
+        );
+        if (res.ok) {
+            dom.btnSubmitScore.textContent = '등록 완료!';
+            dom.submitStatusText.textContent = `✅ '${res.nickname}' 등록됨`;
+            dom.submitStatusText.className = 'text-emerald-600 font-bold';
+            sfx.fever();
+        }
+    } catch (e) {
+        dom.btnSubmitScore.disabled = false;
+        dom.btnSubmitScore.textContent = '다시 시도';
+        dom.submitStatusText.textContent = '등록 실패';
+        dom.submitStatusText.className = 'text-rose-500';
+    }
+});
+
+// 초기 실행
+window.addEventListener('DOMContentLoaded', () => {
+    buildCodexUI();
+    syncCanvasSize();
+    renderScene();
+    leaderboard.init();
+});
+</script>
+</body>
+</html>
