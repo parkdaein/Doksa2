@@ -1095,3 +1095,936 @@
         case 'scrooge': {
           // 실크햇 + 구두쇠 안경 스크루지
           ctx.fillStyle = '#dfe6e9';
+          ctx.beginPath();
+          ctx.arc(0, r * 0.12, r * 0.68, 0, Math.PI * 2);
+          ctx.fill();
+          // 실크햇
+          ctx.fillStyle = '#2d3436';
+          ctx.fillRect(-r * 0.72, -r * 0.38, r * 1.44, r * 0.14);
+          ctx.fillRect(-r * 0.44, -r * 0.96, r * 0.88, r * 0.6);
+          ctx.fillStyle = '#d63031';
+          ctx.fillRect(-r * 0.44, -r * 0.5, r * 0.88, r * 0.12);
+          // 찌푸린 눈썹 & ₩ 눈
+          ctx.strokeStyle = '#2d3436';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.42, -r * 0.15);
+          ctx.lineTo(-r * 0.1, -r * 0.02);
+          ctx.moveTo(r * 0.42, -r * 0.15);
+          ctx.lineTo(r * 0.1, -r * 0.02);
+          ctx.stroke();
+          break;
+        }
+        case 'choibaem': {
+          // 독사의 천적 붉은 눈 보라 독사 최뱀
+          ctx.fillStyle = '#6c5ce7';
+          ctx.beginPath();
+          ctx.moveTo(0, r * 0.88);
+          ctx.quadraticCurveTo(r * 0.95, r * 0.1, r * 0.62, -r * 0.72);
+          ctx.lineTo(0, -r * 0.48);
+          ctx.lineTo(-r * 0.62, -r * 0.72);
+          ctx.quadraticCurveTo(-r * 0.95, r * 0.1, 0, r * 0.88);
+          ctx.fill();
+          // 붉은 눈
+          ctx.fillStyle = '#ff7675';
+          ctx.beginPath();
+          ctx.ellipse(-r * 0.28, -r * 0.05, r * 0.16, r * 0.1, 0.3, 0, Math.PI * 2);
+          ctx.ellipse(r * 0.28, -r * 0.05, r * 0.16, r * 0.1, -0.3, 0, Math.PI * 2);
+          ctx.fill();
+          // 송곳니
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.24, r * 0.42);
+          ctx.lineTo(-r * 0.15, r * 0.72);
+          ctx.lineTo(-r * 0.06, r * 0.42);
+          ctx.moveTo(r * 0.24, r * 0.42);
+          ctx.lineTo(r * 0.15, r * 0.72);
+          ctx.lineTo(r * 0.06, r * 0.42);
+          ctx.fill();
+          break;
+        }
+        case 'dragoncastle': {
+          // 거대한 드래곤 요새 성채
+          ctx.fillStyle = '#34495e';
+          ctx.fillRect(-r * 0.78, -r * 0.45, r * 1.56, r * 1.25);
+          // 성벽 톱니
+          ctx.fillRect(-r * 0.78, -r * 0.72, r * 0.36, r * 0.3);
+          ctx.fillRect(-r * 0.18, -r * 0.72, r * 0.36, r * 0.3);
+          ctx.fillRect(r * 0.42, -r * 0.72, r * 0.36, r * 0.3);
+          // 용의 불꽃 눈
+          ctx.fillStyle = '#e74c3c';
+          ctx.beginPath();
+          ctx.arc(-r * 0.3, r * 0.05, r * 0.16, 0, Math.PI * 2);
+          ctx.arc(r * 0.3, r * 0.05, r * 0.16, 0, Math.PI * 2);
+          ctx.fill();
+          // 성문
+          ctx.fillStyle = '#f39c12';
+          ctx.beginPath();
+          ctx.arc(0, r * 0.8, r * 0.32, Math.PI, 0);
+          ctx.fill();
+          break;
+        }
+        case 'jicollo': {
+          // 피콜로 콘셉트: 초록 피부, 뾰족 귀, 더듬이, 하얀 터번 & 어깨 망토, 보라 도복
+          // 하얀 어깨 망토
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.92, r * 0.82);
+          ctx.quadraticCurveTo(-r * 0.95, r * 0.15, -r * 0.45, r * 0.15);
+          ctx.lineTo(r * 0.45, r * 0.15);
+          ctx.quadraticCurveTo(r * 0.95, r * 0.15, r * 0.92, r * 0.82);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = '#bdc3c7';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          // 보라색 도복 가슴
+          ctx.fillStyle = '#6c3483';
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.42, r * 0.25);
+          ctx.lineTo(r * 0.42, r * 0.25);
+          ctx.lineTo(r * 0.32, r * 0.82);
+          ctx.lineTo(-r * 0.32, r * 0.82);
+          ctx.closePath();
+          ctx.fill();
+
+          // 초록 뾰족 귀
+          ctx.fillStyle = '#27ae60';
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.52, -r * 0.12);
+          ctx.lineTo(-r * 0.95, -r * 0.28);
+          ctx.lineTo(-r * 0.55, r * 0.12);
+          ctx.moveTo(r * 0.52, -r * 0.12);
+          ctx.lineTo(r * 0.95, -r * 0.28);
+          ctx.lineTo(r * 0.55, r * 0.12);
+          ctx.fill();
+
+          // 초록 얼굴
+          ctx.fillStyle = '#2ecc71';
+          ctx.beginPath();
+          ctx.arc(0, -r * 0.05, r * 0.56, 0, Math.PI * 2);
+          ctx.fill();
+
+          // 하얀 터번
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.ellipse(0, -r * 0.46, r * 0.64, r * 0.34, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#dcdde1';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          // 터번 중앙 보라 보석
+          ctx.fillStyle = '#8e44ad';
+          ctx.beginPath();
+          ctx.arc(0, -r * 0.46, r * 0.14, 0, Math.PI * 2);
+          ctx.fill();
+
+          // 이마 더듬이 2개
+          ctx.strokeStyle = '#27ae60';
+          ctx.lineWidth = Math.max(2, r * 0.08);
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.2, -r * 0.25);
+          ctx.quadraticCurveTo(-r * 0.38, -r * 0.02, -r * 0.44, r * 0.12);
+          ctx.moveTo(r * 0.2, -r * 0.25);
+          ctx.quadraticCurveTo(r * 0.38, -r * 0.02, r * 0.44, r * 0.12);
+          ctx.stroke();
+
+          // 매서운 눈매
+          ctx.strokeStyle = '#1e8449';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.32, -r * 0.14);
+          ctx.lineTo(-r * 0.08, -r * 0.06);
+          ctx.moveTo(r * 0.32, -r * 0.14);
+          ctx.lineTo(r * 0.08, -r * 0.06);
+          ctx.stroke();
+          break;
+        }
+      }
+      ctx.restore();
+    }
+
+    // ==========================================
+    // 3. 시작 화면 도감 렌더링 & 랭킹 UI 동기화
+    // ==========================================
+    function populateGuides() {
+      const goodList = document.getElementById('good-char-list');
+      const badList = document.getElementById('bad-char-list');
+      goodList.innerHTML = '';
+      badList.innerHTML = '';
+
+      Object.values(ENTITIES).forEach(ent => {
+        const item = document.createElement('div');
+        item.className = 'char-item';
+
+        const miniCanvas = document.createElement('canvas');
+        miniCanvas.width = 56;
+        miniCanvas.height = 56;
+        const mctx = miniCanvas.getContext('2d');
+        mctx.translate(28, 28);
+        drawEntityArt(mctx, ent.id, 22);
+
+        const info = document.createElement('div');
+        info.className = 'char-info';
+        info.innerHTML = `<b>${ent.name}</b><span>${ent.desc}</span>`;
+
+        item.appendChild(miniCanvas);
+        item.appendChild(info);
+
+        if (ent.type === 'good') goodList.appendChild(item);
+        else badList.appendChild(item);
+      });
+    }
+
+    function renderLeaderboard(containerId, rankings, myUid, currentSessionScore = null) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      if (!rankings || rankings.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:24px 8px; color:#95a5a6; font-size:13px;">아직 등록된 기록이 없습니다.<br>첫 번째 1위의 주인공이 되어보세요!</div>`;
+        return;
+      }
+
+      const topScore = rankings[0].score;
+      container.innerHTML = rankings.map((entry, idx) => {
+        const rank = idx + 1;
+        const isMe = entry.id === myUid;
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}`;
+        const rankClass = rank <= 3 ? `rank-${rank}` : '';
+        const diff = topScore - entry.score;
+        const diffText = rank === 1 ? '👑 현재 1위' : `1위와 -${diff.toLocaleString()}점`;
+
+        return `
+          <div class="lb-row ${rankClass} ${isMe ? 'is-me' : ''}">
+            <div class="lb-left">
+              <span class="lb-rank">${medal}</span>
+              <span class="lb-name">${escapeHtml(entry.nickname)}${isMe ? '<span class="my-tag">MY</span>' : ''}</span>
+            </div>
+            <div class="lb-right">
+              <span class="lb-score">${entry.score.toLocaleString()}점</span>
+              <span class="lb-diff">${diffText}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[s]));
+    }
+
+    function updateGapBadge(score, rankings) {
+      const badge = document.getElementById('score-gap-badge');
+      if (!badge) return;
+      if (!rankings || rankings.length === 0 || score >= rankings[0].score) {
+        badge.className = 'gap-pill top1';
+        badge.textContent = '👑 현재 실시간 1위 기록입니다!';
+      } else {
+        const diff = rankings[0].score - score;
+        badge.className = 'gap-pill';
+        badge.textContent = `현재 1위(${rankings[0].nickname})와 ${diff.toLocaleString()}점 차이`;
+      }
+    }
+
+    // 닉네임 로컬 기억
+    const SAVED_NICK_KEY = 'snake_temptation_nick_v1';
+    const startNickInput = document.getElementById('start-nickname');
+    const resultNickInput = document.getElementById('result-nickname');
+    const savedNick = localStorage.getItem(SAVED_NICK_KEY) || '';
+    startNickInput.value = savedNick;
+    resultNickInput.value = savedNick;
+
+    startNickInput.addEventListener('input', () => {
+      resultNickInput.value = startNickInput.value;
+      localStorage.setItem(SAVED_NICK_KEY, startNickInput.value);
+    });
+    resultNickInput.addEventListener('input', () => {
+      startNickInput.value = resultNickInput.value;
+      localStorage.setItem(SAVED_NICK_KEY, resultNickInput.value);
+    });
+
+    // 실시간 랭킹 업데이트 이벤트 수신
+    window.addEventListener('rankingsUpdated', (e) => {
+      const { rankings, uid, cloud } = e.detail;
+      const connLabel = document.getElementById('connection-label');
+      if (connLabel) {
+        connLabel.textContent = cloud ? '실시간 랭킹 연결됨' : '로컬 랭킹 모드';
+      }
+      renderLeaderboard('result-lb-list', rankings, uid);
+      renderLeaderboard('modal-lb-list', rankings, uid);
+      if (!document.getElementById('result-overlay').classList.contains('hidden')) {
+        updateGapBadge(gameState.score, rankings);
+      }
+    });
+
+    // ==========================================
+    // 4. 메인 게임 루프 & 메커니즘
+    // ==========================================
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvas-container');
+
+    let W = 400;
+    let H = 600;
+
+    function resizeCanvas() {
+      const rect = container.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = rect.width || 400;
+      H = rect.height || 600;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    const ro = new ResizeObserver(resizeCanvas);
+    ro.observe(container);
+    resizeCanvas();
+
+    const gameState = {
+      running: false,
+      timeLeft: 60.0,
+      score: 0,
+      combo: 0,
+      maxCombo: 0,
+      catches: 0,
+      feverGauge: 0, // 0 ~ 15
+      feverTimer: 0, // > 0 이면 피버 활성
+      stunTimer: 0,
+      shakeTimer: 0,
+      spawnTimer: 0,
+      items: [],
+      particles: [],
+      floatingTexts: [],
+      tongue: {
+        active: false,
+        lane: 0, // 0: 왼쪽, 1: 오른쪽
+        progress: 0,
+        hitSuccess: false
+      }
+    };
+
+    function getLaneX(lane) {
+      return lane === 0 ? W * 0.28 : W * 0.72;
+    }
+
+    function getHitLineY() {
+      return H - 115;
+    }
+
+    function getSnakePos() {
+      return { x: W * 0.5, y: H - 38 };
+    }
+
+    function spawnFloatingText(x, y, text, color, scale = 1) {
+      gameState.floatingTexts.push({
+        x, y, text, color, scale,
+        life: 0.85,
+        maxLife: 0.85
+      });
+    }
+
+    function spawnParticles(x, y, color, count = 12) {
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+        const spd = 80 + Math.random() * 160;
+        gameState.particles.push({
+          x, y,
+          vx: Math.cos(angle) * spd,
+          vy: Math.sin(angle) * spd,
+          r: 4 + Math.random() * 4,
+          color,
+          life: 0.45 + Math.random() * 0.2
+        });
+      }
+    }
+
+    function spawnEntity() {
+      const isFever = gameState.feverTimer > 0;
+      const goodKeys = ['yoonmirae', 'l2flounder', 'yuyuhae', 'pumpkin60', 'ogeumsu'];
+      const badKeys = ['coyote', 'scrooge', 'choibaem', 'dragoncastle', 'jicollo'];
+
+      // 코요태 떼거지 연속 스폰 체크
+      if (!isFever && Math.random() < 0.14) {
+        const lane = Math.random() < 0.5 ? 0 : 1;
+        for (let i = 0; i < 2; i++) {
+          createSingleItem('coyote', lane, -45 - i * 85);
+        }
+        return;
+      }
+
+      const pickGood = isFever || Math.random() < 0.62;
+      const pool = pickGood ? goodKeys : badKeys;
+      const key = pool[Math.floor(Math.random() * pool.length)];
+      const lane = Math.random() < 0.5 ? 0 : 1;
+      createSingleItem(key, lane, -45);
+    }
+
+    function createSingleItem(key, lane, startY) {
+      const def = ENTITIES[key];
+      const baseRadius = key === 'dragoncastle' ? 38 : 26;
+      gameState.items.push({
+        key,
+        def,
+        lane,
+        x: getLaneX(lane),
+        y: startY,
+        r: baseRadius,
+        switched: false,
+        chargeState: 'none', // jicollo 기믹용: none -> charging -> dashing
+        chargeTimer: 0,
+        caught: false
+      });
+    }
+
+    function triggerLick(lane) {
+      if (!gameState.running) return;
+      if (gameState.stunTimer > 0) return;
+
+      AudioEngine.lick();
+      gameState.tongue.active = true;
+      gameState.tongue.lane = lane;
+      gameState.tongue.progress = 1.0;
+      gameState.tongue.hitSuccess = false;
+
+      const hitY = getHitLineY();
+      let bestItem = null;
+      let bestDist = Infinity;
+
+      for (const item of gameState.items) {
+        if (item.caught || item.lane !== lane) continue;
+        const dist = Math.abs(item.y - hitY);
+        const maxRange = item.key === 'dragoncastle' ? 76 : 66;
+        if (dist <= maxRange && dist < bestDist) {
+          bestDist = dist;
+          bestItem = item;
+        }
+      }
+
+      if (!bestItem) return;
+
+      bestItem.caught = true;
+      gameState.tongue.hitSuccess = true;
+      const isFever = gameState.feverTimer > 0;
+      const effectiveType = isFever ? 'good' : bestItem.def.type;
+
+      if (effectiveType === 'good') {
+        const isPerfect = bestDist <= 28;
+        const basePts = bestItem.def.score || 120;
+        const mult = (isPerfect ? 1.3 : 1.0) * (isFever ? 2 : 1);
+        const gained = Math.round((basePts * mult) / 10) * 10;
+
+        gameState.score += gained;
+        gameState.combo += 1;
+        gameState.catches += 1;
+        if (gameState.combo > gameState.maxCombo) gameState.maxCombo = gameState.combo;
+
+        if (!isFever) {
+          const gaugeGain = bestItem.key === 'pumpkin60' ? 2 : 1;
+          gameState.feverGauge = Math.min(15, gameState.feverGauge + gaugeGain);
+          if (gameState.feverGauge >= 15) {
+            gameState.feverTimer = 7.0;
+            gameState.feverGauge = 0;
+            AudioEngine.fever();
+            spawnFloatingText(W * 0.5, H * 0.42, '🔥 독사의 본능 FEVER! (2배) 🔥', '#e67e22', 1.25);
+          }
+        }
+
+        if (isPerfect) {
+          AudioEngine.perfect();
+          spawnFloatingText(bestItem.x, bestItem.y - 18, `PERFECT! +${gained}`, '#00b894', 1.15);
+          spawnParticles(bestItem.x, bestItem.y, '#55efc4', 14);
+        } else {
+          AudioEngine.good();
+          spawnFloatingText(bestItem.x, bestItem.y - 18, `GOOD +${gained}`, '#0984e3', 1.0);
+          spawnParticles(bestItem.x, bestItem.y, '#74b9ff', 10);
+        }
+      } else {
+        // 악성 개체 터치 패널티
+        AudioEngine.bad();
+        const penalty = bestItem.def.penalty || 150;
+        gameState.score = Math.max(0, gameState.score - penalty);
+        gameState.combo = 0;
+        gameState.shakeTimer = 0.35;
+
+        if (bestItem.key === 'scrooge') {
+          gameState.feverGauge = 0;
+          spawnFloatingText(bestItem.x, bestItem.y - 18, `게이지 몰수! -${penalty}`, '#d63031', 1.1);
+        } else if (bestItem.key === 'choibaem') {
+          gameState.stunTimer = 1.2;
+          spawnFloatingText(bestItem.x, bestItem.y - 18, `기절 1.2초! -${penalty}`, '#8e44ad', 1.15);
+        } else if (bestItem.key === 'jicollo') {
+          gameState.stunTimer = 0.7;
+          spawnFloatingText(bestItem.x, bestItem.y - 18, `마관광살포 피격! -${penalty}`, '#27ae60', 1.15);
+        } else {
+          spawnFloatingText(bestItem.x, bestItem.y - 18, `악성 개체! -${penalty}`, '#d63031', 1.1);
+        }
+        spawnParticles(bestItem.x, bestItem.y, '#ff7675', 16);
+      }
+      updateHUD();
+    }
+
+    function updateHUD() {
+      document.getElementById('score-val').textContent = gameState.score.toLocaleString();
+      const timerEl = document.getElementById('timer-val');
+      timerEl.textContent = Math.max(0, gameState.timeLeft).toFixed(1);
+      if (gameState.timeLeft <= 10) timerEl.classList.add('urgent');
+      else timerEl.classList.remove('urgent');
+
+      const comboEl = document.getElementById('combo-badge');
+      comboEl.textContent = `${gameState.combo} COMBO`;
+
+      const barEl = document.getElementById('fever-bar');
+      const labelEl = document.getElementById('fever-label');
+      if (gameState.feverTimer > 0) {
+        barEl.style.width = `${(gameState.feverTimer / 7.0) * 100}%`;
+        labelEl.textContent = `🔥 FEVER TIME! (${gameState.feverTimer.toFixed(1)}s) 🔥`;
+      } else {
+        barEl.style.width = `${(gameState.feverGauge / 15) * 100}%`;
+        labelEl.textContent = `FEVER GAUGE (${gameState.feverGauge} / 15)`;
+      }
+    }
+
+    function updateGame(dt) {
+      if (!gameState.running) return;
+
+      gameState.timeLeft -= dt;
+      if (gameState.timeLeft <= 0) {
+        gameState.timeLeft = 0;
+        endGame();
+        return;
+      }
+
+      if (gameState.feverTimer > 0) {
+        gameState.feverTimer = Math.max(0, gameState.feverTimer - dt);
+      }
+      if (gameState.stunTimer > 0) {
+        gameState.stunTimer = Math.max(0, gameState.stunTimer - dt);
+      }
+      if (gameState.shakeTimer > 0) {
+        gameState.shakeTimer = Math.max(0, gameState.shakeTimer - dt);
+      }
+      if (gameState.tongue.active) {
+        gameState.tongue.progress -= dt * 7.5;
+        if (gameState.tongue.progress <= 0) {
+          gameState.tongue.active = false;
+          gameState.tongue.progress = 0;
+        }
+      }
+
+      // 시간 경과에 따른 난이도(스폰 간격) 가속
+      const elapsed = 60 - gameState.timeLeft;
+      const spawnInterval = Math.max(0.36, 0.78 - elapsed * 0.0065);
+      gameState.spawnTimer -= dt;
+      if (gameState.spawnTimer <= 0) {
+        spawnEntity();
+        gameState.spawnTimer = spawnInterval;
+      }
+
+      const hitY = getHitLineY();
+      const speedMult = 1 + elapsed * 0.006;
+
+      for (let i = gameState.items.length - 1; i >= 0; i--) {
+        const item = gameState.items[i];
+        if (item.caught) {
+          gameState.items.splice(i, 1);
+          continue;
+        }
+
+        // 오금수 기믹: 중간 지점에서 레인 이동
+        if (item.key === 'ogeumsu' && !item.switched && item.y > H * 0.36) {
+          item.switched = true;
+          item.lane = item.lane === 0 ? 1 : 0;
+          spawnParticles(item.x, item.y, '#ffeaa7', 8);
+        }
+        const targetX = getLaneX(item.lane);
+        item.x += (targetX - item.x) * Math.min(1, dt * 14);
+
+        // 지콜로 기믹: 공중 정지 후 기 모으기 -> 2.3배 급강하
+        let itemSpeed = item.def.speed * speedMult;
+        if (item.key === 'jicollo' && gameState.feverTimer <= 0) {
+          if (item.chargeState === 'none' && item.y > H * 0.25) {
+            item.chargeState = 'charging';
+            item.chargeTimer = 0.45;
+          }
+          if (item.chargeState === 'charging') {
+            itemSpeed = 0;
+            item.chargeTimer -= dt;
+            if (item.chargeTimer <= 0) {
+              item.chargeState = 'dashing';
+            }
+          } else if (item.chargeState === 'dashing') {
+            itemSpeed *= 2.3;
+          }
+        }
+
+        item.y += itemSpeed * dt;
+
+        // 화면 아래로 지나간 경우
+        if (item.y > H + 50) {
+          if (item.def.type === 'good' && gameState.feverTimer <= 0) {
+            if (gameState.combo > 0) {
+              gameState.combo = 0;
+              spawnFloatingText(item.x, hitY, 'MISS!', '#95a5a6', 0.9);
+            }
+          }
+          gameState.items.splice(i, 1);
+        }
+      }
+
+      // 파티클 & 플로팅 텍스트 업데이트
+      for (let i = gameState.particles.length - 1; i >= 0; i--) {
+        const p = gameState.particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+        if (p.life <= 0) gameState.particles.splice(i, 1);
+      }
+
+      for (let i = gameState.floatingTexts.length - 1; i >= 0; i--) {
+        const ft = gameState.floatingTexts[i];
+        ft.y -= 45 * dt;
+        ft.life -= dt;
+        if (ft.life <= 0) gameState.floatingTexts.splice(i, 1);
+      }
+
+      updateHUD();
+    }
+
+    function drawSnake(ctx) {
+      const pos = getSnakePos();
+      ctx.save();
+      ctx.translate(pos.x, pos.y);
+
+      // 기절 시 흔들림
+      if (gameState.stunTimer > 0) {
+        ctx.translate(Math.sin(performance.now() * 0.05) * 6, 0);
+      }
+
+      // 독사 몸통/머리 (귀여운 캐주얼 일러스트)
+      ctx.fillStyle = gameState.feverTimer > 0 ? '#f39c12' : '#2ecc71';
+      ctx.beginPath();
+      ctx.ellipse(0, 4, 42, 32, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = gameState.feverTimer > 0 ? '#d35400' : '#27ae60';
+      ctx.lineWidth = 3.5;
+      ctx.stroke();
+
+      // 볼터치
+      ctx.fillStyle = 'rgba(255, 118, 117, 0.55)';
+      ctx.beginPath();
+      ctx.arc(-24, 6, 7, 0, Math.PI * 2);
+      ctx.arc(24, 6, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 두 눈
+      if (gameState.stunTimer > 0) {
+        ctx.strokeStyle = '#2d3436';
+        ctx.lineWidth = 3;
+        [-16, 16].forEach(ex => {
+          ctx.beginPath();
+          ctx.moveTo(ex - 6, -12);
+          ctx.lineTo(ex + 6, -2);
+          ctx.moveTo(ex + 6, -12);
+          ctx.lineTo(ex - 6, -2);
+          ctx.stroke();
+        });
+      } else {
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(-16, -8, 10, 0, Math.PI * 2);
+        ctx.arc(16, -8, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#2d3436';
+        ctx.beginPath();
+        ctx.arc(-16, -9, 5, 0, Math.PI * 2);
+        ctx.arc(16, -9, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 콧구멍
+      ctx.fillStyle = '#1e8449';
+      ctx.beginPath();
+      ctx.arc(-6, 4, 2.2, 0, Math.PI * 2);
+      ctx.arc(6, 4, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function renderGame() {
+      ctx.save();
+      if (gameState.shakeTimer > 0) {
+        const mag = gameState.shakeTimer * 22;
+        ctx.translate((Math.random() - 0.5) * mag, (Math.random() - 0.5) * mag);
+      }
+
+      // 배경
+      ctx.fillStyle = gameState.feverTimer > 0 ? '#fff3cd' : '#fef9e7';
+      ctx.fillRect(0, 0, W, H);
+
+      // 레인 가이드 배경
+      const leftX = getLaneX(0);
+      const rightX = getLaneX(1);
+      const hitY = getHitLineY();
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.fillRect(leftX - 54, 0, 108, H);
+      ctx.fillRect(rightX - 54, 0, 108, H);
+
+      // 중앙 구분 점선
+      ctx.strokeStyle = 'rgba(241, 196, 15, 0.45)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 8]);
+      ctx.beginPath();
+      ctx.moveTo(W * 0.5, 0);
+      ctx.lineTo(W * 0.5, H);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 타격 판정 존 (좌/우 링)
+      [leftX, rightX].forEach((lx, idx) => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(lx, hitY, 36, 0, Math.PI * 2);
+        ctx.fillStyle = idx === 0 ? 'rgba(255, 118, 117, 0.14)' : 'rgba(116, 185, 255, 0.14)';
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = idx === 0 ? 'rgba(214, 48, 49, 0.45)' : 'rgba(9, 132, 227, 0.45)';
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      // 독사 혀 렌더링 (개체 뒤/앞 자연스럽게)
+      if (gameState.tongue.active) {
+        const snakePos = getSnakePos();
+        const targetX = getLaneX(gameState.tongue.lane);
+        const targetY = hitY;
+        const p = Math.sin(gameState.tongue.progress * Math.PI);
+        const curX = snakePos.x + (targetX - snakePos.x) * p;
+        const curY = snakePos.y - 16 + (targetY - (snakePos.y - 16)) * p;
+
+        ctx.save();
+        ctx.strokeStyle = '#ff4757';
+        ctx.lineWidth = 10;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(snakePos.x, snakePos.y - 14);
+        ctx.lineTo(curX, curY);
+        ctx.stroke();
+
+        // 갈라진 혀끝
+        const angle = Math.atan2(curY - (snakePos.y - 14), curX - snakePos.x);
+        ctx.beginPath();
+        ctx.moveTo(curX, curY);
+        ctx.lineTo(curX + Math.cos(angle - 0.35) * 14, curY + Math.sin(angle - 0.35) * 14);
+        ctx.moveTo(curX, curY);
+        ctx.lineTo(curX + Math.cos(angle + 0.35) * 14, curY + Math.sin(angle + 0.35) * 14);
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 내려오는 개체 렌더링
+      const isFever = gameState.feverTimer > 0;
+      for (const item of gameState.items) {
+        ctx.save();
+        ctx.translate(item.x, item.y);
+
+        // 지콜로 기 모으기 오라 이펙트
+        if (item.key === 'jicollo' && item.chargeState === 'charging') {
+          ctx.beginPath();
+          ctx.arc(0, 0, item.r + 12 + Math.sin(performance.now() * 0.04) * 5, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(155, 89, 182, 0.35)';
+          ctx.fill();
+        }
+
+        // 카드 배경 원
+        const isGood = isFever || item.def.type === 'good';
+        ctx.beginPath();
+        ctx.arc(0, 0, item.r + 4, 0, Math.PI * 2);
+        ctx.fillStyle = isGood ? '#ffffff' : '#fff0f0';
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = isGood ? '#2ecc71' : '#e74c3c';
+        ctx.stroke();
+
+        // 피버 타임이면 악성 개체도 호박60(보너스) 모습으로 변신
+        const renderKey = (isFever && item.def.type === 'bad') ? 'pumpkin60' : item.key;
+        drawEntityArt(ctx, renderKey, item.r * 0.85);
+
+        // 이름 태그
+        ctx.fillStyle = isGood ? '#00b894' : '#d63031';
+        ctx.beginPath();
+        ctx.roundRect(-30, item.r + 2, 60, 17, 8);
+        ctx.fill();
+
+        ctx.fillStyle = '#fff';
+        ctx.font = '700 11px "Noto Sans KR", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(item.def.name, 0, item.r + 10.5);
+
+        ctx.restore();
+      }
+
+      // 하단 독사 캐릭터
+      drawSnake(ctx);
+
+      // 파티클
+      for (const p of gameState.particles) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.life * 1.8);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 플로팅 텍스트
+      for (const ft of gameState.floatingTexts) {
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, ft.life / ft.maxLife * 1.4);
+        ctx.font = `900 ${Math.round(17 * ft.scale)}px Jua, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 4;
+        ctx.strokeText(ft.text, ft.x, ft.y);
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    let lastTime = 0;
+    function loop(now) {
+      const dt = Math.min(0.05, (now - lastTime) / 1000 || 0.016);
+      lastTime = now;
+      updateGame(dt);
+      renderGame();
+      requestAnimationFrame(loop);
+    }
+
+    function startGame() {
+      AudioEngine.init();
+      gameState.running = true;
+      gameState.timeLeft = 60.0;
+      gameState.score = 0;
+      gameState.combo = 0;
+      gameState.maxCombo = 0;
+      gameState.catches = 0;
+      gameState.feverGauge = 0;
+      gameState.feverTimer = 0;
+      gameState.stunTimer = 0;
+      gameState.shakeTimer = 0;
+      gameState.spawnTimer = 0.25;
+      gameState.items = [];
+      gameState.particles = [];
+      gameState.floatingTexts = [];
+      gameState.tongue.active = false;
+
+      document.getElementById('start-overlay').classList.add('hidden');
+      document.getElementById('result-overlay').classList.add('hidden');
+      document.getElementById('rank-modal').classList.add('hidden');
+
+      const regBtn = document.getElementById('register-score-btn');
+      regBtn.disabled = false;
+      regBtn.textContent = '🏆 랭킹 등록';
+
+      updateHUD();
+    }
+
+    function endGame() {
+      gameState.running = false;
+      document.getElementById('final-score').textContent = gameState.score.toLocaleString();
+      document.getElementById('final-combo').textContent = `${gameState.maxCombo} COMBO`;
+      document.getElementById('final-catches').textContent = `${gameState.catches}마리`;
+
+      const rankings = window.RankingService ? window.RankingService.getRankings() : [];
+      const uid = window.RankingService ? window.RankingService.getUid() : '';
+      renderLeaderboard('result-lb-list', rankings, uid, gameState.score);
+      updateGapBadge(gameState.score, rankings);
+
+      document.getElementById('result-overlay').classList.remove('hidden');
+    }
+
+    // 버튼 및 키보드 바인딩
+    const btnLeft = document.getElementById('btn-left');
+    const btnRight = document.getElementById('btn-right');
+
+    btnLeft.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      btnLeft.classList.add('pressed');
+      triggerLick(0);
+    });
+    btnLeft.addEventListener('pointerup', () => btnLeft.classList.remove('pressed'));
+    btnLeft.addEventListener('pointerleave', () => btnLeft.classList.remove('pressed'));
+
+    btnRight.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      btnRight.classList.add('pressed');
+      triggerLick(1);
+    });
+    btnRight.addEventListener('pointerup', () => btnRight.classList.remove('pressed'));
+    btnRight.addEventListener('pointerleave', () => btnRight.classList.remove('pressed'));
+
+    window.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        btnLeft.classList.add('pressed');
+        triggerLick(0);
+      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        btnRight.classList.add('pressed');
+        triggerLick(1);
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        btnLeft.classList.remove('pressed');
+      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        btnRight.classList.remove('pressed');
+      }
+    });
+
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('restart-btn').addEventListener('click', startGame);
+
+    document.getElementById('open-rank-btn').addEventListener('click', () => {
+      const rankings = window.RankingService ? window.RankingService.getRankings() : [];
+      const uid = window.RankingService ? window.RankingService.getUid() : '';
+      renderLeaderboard('modal-lb-list', rankings, uid);
+      document.getElementById('rank-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('close-rank-btn').addEventListener('click', () => {
+      document.getElementById('rank-modal').classList.add('hidden');
+    });
+
+    document.getElementById('register-score-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('register-score-btn');
+      const nick = resultNickInput.value.trim() || '익명독사';
+      localStorage.setItem(SAVED_NICK_KEY, nick);
+      startNickInput.value = nick;
+
+      btn.disabled = true;
+      btn.textContent = '등록 중...';
+
+      if (window.RankingService) {
+        await window.RankingService.submitScore(nick, gameState.score, gameState.maxCombo);
+      }
+      btn.textContent = '✅ 등록 완료!';
+    });
+
+    populateGuides();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
