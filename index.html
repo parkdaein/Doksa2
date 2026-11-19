@@ -161,7 +161,7 @@
                 <button id="btn-open-ranking" type="button"
                     class="shrink-0 bg-gradient-to-b from-amber-400 to-orange-500 text-white text-xs px-3 py-2 rounded-xl border-2 border-amber-200 shadow-sm active:translate-y-0.5 cursor-pointer flex items-center gap-1">
                     <span>🏆</span>
-                    <span>TOP 10</span>
+                    <span>실시간 TOP 10</span>
                 </button>
             </div>
 
@@ -207,7 +207,12 @@
                     S
                 </div>
                 <div class="text-left">
-                    <div class="text-xs text-slate-400">최종 사냥 점수</div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs text-slate-400">최종 사냥 점수</span>
+                        <span id="res-first-diff" class="text-[11px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
+                            순위 비교 중...
+                        </span>
+                    </div>
                     <div id="res-score" class="text-3xl text-rose-600 leading-none my-0.5">0</div>
                     <div class="text-[11px] text-slate-500">
                         최대 <span id="res-combo" class="text-amber-600 font-bold">0</span>콤보 · P <span id="res-hits" class="text-emerald-600 font-bold">0/0</span> · 함정 <span id="res-bad" class="text-slate-700 font-bold">0회</span>
@@ -221,7 +226,7 @@
             <!-- 실시간 랭킹 등록 폼 -->
             <div class="bg-rose-50/80 rounded-2xl p-2.5 border border-rose-200">
                 <div class="text-[11px] text-rose-600 text-left mb-1.5 flex items-center justify-between">
-                    <span>✍️ 실시간 명예의 전당 기록 등록</span>
+                    <span>✍️ 실시간 명예의 전당 기록 등록 / 갱신</span>
                     <span id="submit-status-text" class="text-slate-400">미등록</span>
                 </div>
                 <div class="flex items-center gap-1.5">
@@ -287,37 +292,50 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 /**
- * 낼름! 독사의 유혹 - 60초 타임어택 아케이드 + 실시간 TOP 10 랭킹
+ * 낼름! 독사의 유혹 - 60초 타임어택 아케이드 + 실시간 TOP 10 랭킹 비교
  */
 
 // ==================== 0. Firebase Firestore 실시간 랭킹 엔진 ====================
 const NICKNAME_STORAGE_KEY = 'snake_temptation_nickname_v1';
 const FALLBACK_RANK_KEY = 'snake_temptation_fallback_ranks_v1';
+const PLAYER_UID_KEY = 'snake_temptation_player_uid_v1';
 
 class RealtimeLeaderboard {
     constructor() {
         this.db = null;
         this.auth = null;
         this.user = null;
+        this.playerUid = this.getOrCreatePlayerUid();
         this.appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         this.isCloudReady = false;
+        this.allRecords = [];
         this.rankings = [];
-        this.lastSubmittedDocId = null;
         this.hasSubmittedCurrentRound = false;
     }
 
+    getOrCreatePlayerUid() {
+        try {
+            let uid = localStorage.getItem(PLAYER_UID_KEY);
+            if (!uid) {
+                uid = 'viper_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+                localStorage.setItem(PLAYER_UID_KEY, uid);
+            }
+            return uid;
+        } catch (e) {
+            return 'viper_session_' + Math.random().toString(36).slice(2, 9);
+        }
+    }
+
     async init() {
-        // 저장된 닉네임 복원
         const savedNick = this.getSavedNickname();
         const startInput = document.getElementById('input-nickname-start');
         const resultInput = document.getElementById('input-nickname-result');
         if (startInput && savedNick) startInput.value = savedNick;
         if (resultInput && savedNick) resultInput.value = savedNick;
 
-        // 닉네임 입력창 양방향 동기화
         if (startInput && resultInput) {
             startInput.addEventListener('input', (e) => {
                 resultInput.value = e.target.value;
@@ -329,8 +347,8 @@ class RealtimeLeaderboard {
             });
         }
 
-        // 로컬 폴백 데이터 먼저 로드하여 즉시 표시
-        this.rankings = this.loadFallbackRankings();
+        this.allRecords = this.loadFallbackRankings();
+        this.rankings = this.allRecords.slice(0, 10);
         this.renderAll();
 
         try {
@@ -352,6 +370,7 @@ class RealtimeLeaderboard {
             }
 
             if (!this.user) return;
+            this.playerUid = this.user.uid || this.playerUid;
 
             this.isCloudReady = true;
             this.updateConnectionBadge(true);
@@ -376,27 +395,53 @@ class RealtimeLeaderboard {
                     const data = docSnap.data();
                     list.push({
                         id: docSnap.id,
+                        uid: String(data.uid || docSnap.id),
                         nickname: String(data.nickname || '익명독사').slice(0, 10),
                         score: Number(data.score) || 0,
                         maxCombo: Number(data.maxCombo) || 0,
-                        createdAt: Number(data.createdAt) || 0
+                        updatedAt: Number(data.updatedAt || data.createdAt) || 0
                     });
                 });
 
                 list.sort((a, b) => {
                     if (b.score !== a.score) return b.score - a.score;
                     if (b.maxCombo !== a.maxCombo) return b.maxCombo - a.maxCombo;
-                    return a.createdAt - b.createdAt;
+                    return a.updatedAt - b.updatedAt;
                 });
 
+                this.allRecords = list;
                 this.rankings = list.slice(0, 10);
                 this.saveFallbackRankings(this.rankings);
                 this.renderAll();
+                if (!state.running && !dom.overlayResult.classList.contains('hidden')) {
+                    this.updateFirstPlaceComparison(state.score);
+                }
             },
             () => {
                 this.updateConnectionBadge(false);
             }
         );
+    }
+
+    updateFirstPlaceComparison(currentScore) {
+        const diffEl = document.getElementById('res-first-diff');
+        if (!diffEl) return;
+
+        if (!this.rankings || this.rankings.length === 0) {
+            diffEl.textContent = '👑 첫 1위 도전 가능!';
+            diffEl.className = 'text-[11px] bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full font-bold';
+            return;
+        }
+
+        const topScore = this.rankings[0].score;
+        if (currentScore >= topScore) {
+            diffEl.textContent = '👑 현재 실시간 1위 점수!';
+            diffEl.className = 'text-[11px] bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full font-bold';
+        } else {
+            const gap = topScore - currentScore;
+            diffEl.textContent = `1위(${this.escapeHtml(this.rankings[0].nickname)})와 ${gap.toLocaleString()}점 차이`;
+            diffEl.className = 'text-[11px] bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-full';
+        }
     }
 
     async submitScore(rawNickname, score, maxCombo) {
@@ -405,31 +450,39 @@ class RealtimeLeaderboard {
         document.getElementById('input-nickname-start').value = cleanNick;
         document.getElementById('input-nickname-result').value = cleanNick;
 
+        const cleanScore = Math.max(0, Math.floor(score));
+        const cleanCombo = Math.max(0, Math.floor(maxCombo));
+
+        // 동일 유저의 기존 최고 기록이 더 높으면 최고 점수 유지, 닉네임은 최신으로 갱신
+        const existingMine = this.allRecords.find(r => r.uid === this.playerUid || r.id === this.playerUid);
+        const bestScore = existingMine ? Math.max(existingMine.score, cleanScore) : cleanScore;
+        const bestCombo = existingMine ? Math.max(existingMine.maxCombo, cleanCombo) : cleanCombo;
+        const isNewPersonalBest = !existingMine || cleanScore > existingMine.score;
+
         const payload = {
+            uid: this.playerUid,
             nickname: cleanNick,
-            score: Math.max(0, Math.floor(score)),
-            maxCombo: Math.max(0, Math.floor(maxCombo)),
-            uid: this.user ? this.user.uid : 'local-player',
-            createdAt: Date.now()
+            score: bestScore,
+            maxCombo: bestCombo,
+            updatedAt: Date.now()
         };
 
         if (this.isCloudReady && this.db && this.user) {
-            const colRef = collection(this.db, 'artifacts', this.appId, 'public', 'data', 'snake_rankings');
-            const docRef = await addDoc(colRef, payload);
-            this.lastSubmittedDocId = docRef.id;
+            // 유저당 1개 문서(uid)로 실시간 최고 기록 갱신
+            const docRef = doc(this.db, 'artifacts', this.appId, 'public', 'data', 'snake_rankings', this.playerUid);
+            await setDoc(docRef, payload);
             this.hasSubmittedCurrentRound = true;
-            return { ok: true, mode: 'cloud', nickname: cleanNick };
+            return { ok: true, mode: 'cloud', nickname: cleanNick, isNewPersonalBest, bestScore };
         } else {
-            // 오프라인/폴백 모드 처리
-            const localId = 'local_' + Date.now();
-            const merged = [...this.rankings, { id: localId, ...payload }];
-            merged.sort((a, b) => (b.score - a.score) || (b.maxCombo - a.maxCombo) || (a.createdAt - b.createdAt));
+            const filtered = this.allRecords.filter(r => r.uid !== this.playerUid);
+            const merged = [...filtered, { id: this.playerUid, ...payload }];
+            merged.sort((a, b) => (b.score - a.score) || (b.maxCombo - a.maxCombo) || (a.updatedAt - b.updatedAt));
+            this.allRecords = merged;
             this.rankings = merged.slice(0, 10);
-            this.lastSubmittedDocId = localId;
             this.hasSubmittedCurrentRound = true;
             this.saveFallbackRankings(this.rankings);
             this.renderAll();
-            return { ok: true, mode: 'local', nickname: cleanNick };
+            return { ok: true, mode: 'local', nickname: cleanNick, isNewPersonalBest, bestScore };
         }
     }
 
@@ -473,7 +526,7 @@ class RealtimeLeaderboard {
                 resBadge.className = 'text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded-full';
             }
             if (modBadge) {
-                modBadge.textContent = '● 전 세계 플레이어 실시간 순위 반영 중';
+                modBadge.textContent = '● 다른 유저들과 실시간 순위 비교 중';
                 modBadge.className = 'text-[11px] text-emerald-600';
             }
         } else {
@@ -512,16 +565,19 @@ class RealtimeLeaderboard {
             containerEl.innerHTML = `
                 <div class="text-center py-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                     <div class="text-2xl mb-1">🐍</div>
-                    <div class="text-xs text-slate-500">아직 등록된 랭킹이 없습니다.</div>
+                    <div class="text-xs text-slate-500">아직 등록된 유저 랭킹이 없습니다.</div>
                     <div class="text-[11px] text-rose-500 mt-0.5">첫 번째 명예의 전당 1위에 도전하세요!</div>
                 </div>
             `;
             return;
         }
 
+        const topScore = this.rankings[0].score;
+
         containerEl.innerHTML = this.rankings.map((item, idx) => {
             const rank = idx + 1;
-            const isMine = this.lastSubmittedDocId && item.id === this.lastSubmittedDocId;
+            const isMine = item.uid === this.playerUid || item.id === this.playerUid;
+            const diffFromFirst = topScore - item.score;
 
             let badgeHtml = `<span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs flex items-center justify-center shrink-0">${rank}</span>`;
             let rowStyle = 'bg-slate-50/90 border-slate-100';
@@ -541,6 +597,10 @@ class RealtimeLeaderboard {
                 rowStyle = 'bg-rose-50 border-rose-400 ring-2 ring-rose-200';
             }
 
+            const gapLabel = rank === 1
+                ? '👑 1위'
+                : `1위와 -${diffFromFirst.toLocaleString()}점`;
+
             return `
                 <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl border ${rowStyle} transition-all">
                     <div class="flex items-center gap-2 min-w-0">
@@ -551,7 +611,7 @@ class RealtimeLeaderboard {
                                 ${isMine ? '<span class="text-[9px] bg-rose-500 text-white px-1.5 py-0.2 rounded-full">MY</span>' : ''}
                             </div>
                             <div class="text-[10px] text-slate-400">
-                                최대 ${item.maxCombo}콤보 · ${this.formatTimeAgo(item.createdAt)}
+                                최대 ${item.maxCombo}콤보 · ${gapLabel} · ${this.formatTimeAgo(item.updatedAt)}
                             </div>
                         </div>
                     </div>
@@ -1348,6 +1408,7 @@ function endGame() {
     dom.resHits.textContent = `${state.perfectCount}/${state.goodCount}`;
     dom.resBad.textContent = `${state.badHitCount}회`;
 
+    leaderboard.updateFirstPlaceComparison(state.score);
     leaderboard.renderAll();
     dom.overlayResult.classList.remove('hidden');
 }
@@ -2172,8 +2233,10 @@ dom.btnSubmitScore.addEventListener('click', async () => {
             state.maxCombo
         );
         if (res.ok) {
-            dom.btnSubmitScore.textContent = '등록 완료!';
-            dom.submitStatusText.textContent = `✅ '${res.nickname}' 등록됨`;
+            dom.btnSubmitScore.textContent = res.isNewPersonalBest ? '최고 기록 갱신!' : '닉네임 반영됨';
+            dom.submitStatusText.textContent = res.isNewPersonalBest
+                ? `✅ '${res.nickname}' 최고점(${res.bestScore.toLocaleString()}점) 반영`
+                : `✅ 기존 최고점(${res.bestScore.toLocaleString()}점) 유지`;
             dom.submitStatusText.className = 'text-emerald-600 font-bold';
             sfx.fever();
         }
